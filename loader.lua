@@ -103,7 +103,7 @@
     reportPopup.AnchorPoint = Vector2.new(0.5, 0)
     reportPopup.Position = UDim2.new(0.5, 0, 0, 46)
     reportPopup.Size = UDim2.fromOffset(340, 56)
-    reportPopup.BackgroundColor3 = Color3.fromRGB(18, 18, 30)
+    reportPopup.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
     reportPopup.BackgroundTransparency = 0.05
     reportPopup.BorderSizePixel = 0
     reportPopup.Visible = false
@@ -326,27 +326,27 @@
 
     if type(setfpscap) == "function" then pcall(setfpscap, 240) end
 
-    local uiAccentColor = Color3.fromRGB(0, 255, 0)
+    local uiAccentColor = Color3.fromRGB(0, 220, 110)
     local accentStrokes = {}
     local accentGradients = {}
     local function bindAccent(stroke)
-        stroke.Color = uiAccentColor
+        stroke.Color = Color3.fromRGB(50, 50, 50)
         table.insert(accentStrokes, stroke)
     end
     local function bindAccentGradient(gradient)
-        gradient.Color = ColorSequence.new(uiAccentColor, Color3.fromRGB(223, 57, 137))
+        gradient.Color = ColorSequence.new(uiAccentColor, Color3.fromRGB(0, 190, 95))
         table.insert(accentGradients, gradient)
     end
     local function setUIAccent(color)
         uiAccentColor = color
         for index = #accentStrokes, 1, -1 do
             local stroke = accentStrokes[index]
-            if stroke.Parent then stroke.Color = color else table.remove(accentStrokes, index) end
+            if stroke.Parent then stroke.Color = Color3.fromRGB(50, 50, 50) else table.remove(accentStrokes, index) end
         end
         for index = #accentGradients, 1, -1 do
             local gradient = accentGradients[index]
             if gradient.Parent then
-                gradient.Color = ColorSequence.new(color, Color3.fromRGB(223, 57, 137))
+                gradient.Color = ColorSequence.new(color, Color3.fromRGB(0, 190, 95))
             else
                 table.remove(accentGradients, index)
             end
@@ -360,9 +360,115 @@
     Main.AnchorPoint = Vector2.new(0.5, 0.5)
     Main.Position = UDim2.new(0.5, 10, 0.5, -4)
     Main.Size = UDim2.fromOffset(600, 800)
-    Main.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+    Main.BackgroundColor3 = Color3.fromRGB(22, 22, 22)
+    Main.BackgroundTransparency = 0.18
     Main.ZIndex = 1
     Main.BorderSizePixel = 0
+
+
+    local OMNI_BACKGROUND_URL = "https://raw.githubusercontent.com/samm124123-glitch/omni/main/omni.png"
+    local OMNI_BACKGROUND_FOLDER = "Omni"
+    local OMNI_BACKGROUND_FILE = OMNI_BACKGROUND_FOLDER .. "/omni_background.png"
+
+    local function fetchOmniBackground()
+      
+        local requestFunction = (syn and syn.request) or request or http_request
+        if type(requestFunction) == "function" then
+            local ok, response = pcall(requestFunction, {
+                Url = OMNI_BACKGROUND_URL,
+                Method = "GET"
+            })
+            if ok and type(response) == "table"
+                and (response.StatusCode == 200 or response.StatusCode == 0)
+                and type(response.Body) == "string"
+                and #response.Body > 8 then
+                return response.Body
+            end
+        end
+
+        local ok, body = pcall(function()
+            return game:HttpGet(OMNI_BACKGROUND_URL)
+        end)
+        if ok and type(body) == "string" and #body > 8 then
+            return body
+        end
+        return nil
+    end
+
+    local function loadOmniBackgroundAsset()
+        local assetLoader = getcustomasset or getsynasset
+        if type(assetLoader) ~= "function" or type(writefile) ~= "function" then
+            warn("[OMNI] Background unavailable: executor must support writefile and getcustomasset/getsynasset.")
+            return nil
+        end
+
+        local imageData
+        if type(isfile) == "function" and type(readfile) == "function" then
+            local existsOK, exists = pcall(isfile, OMNI_BACKGROUND_FILE)
+            if existsOK and exists then
+                local readOK, cached = pcall(readfile, OMNI_BACKGROUND_FILE)
+                if readOK and type(cached) == "string" and #cached > 8 then
+                    imageData = cached
+                end
+            end
+        end
+
+        if not imageData then
+            imageData = fetchOmniBackground()
+            if not imageData then
+                warn("[OMNI] Could not download the logo image. Check the GitHub URL and executor HTTP access.")
+                return nil
+            end
+
+            if type(makefolder) == "function" then
+                pcall(makefolder, OMNI_BACKGROUND_FOLDER)
+            end
+
+            local writeOK = pcall(writefile, OMNI_BACKGROUND_FILE, imageData)
+            if not writeOK then
+                warn("[OMNI] Could not save the logo image to the executor workspace.")
+                return nil
+            end
+        end
+
+        local assetOK, asset = pcall(assetLoader, OMNI_BACKGROUND_FILE)
+        if assetOK and type(asset) == "string" and #asset > 0 then
+            return asset
+        end
+
+        warn("[OMNI] The image downloaded, but the executor could not convert it to a local asset.")
+        return nil
+    end
+
+    local omniBackgroundImage = Instance.new("ImageLabel")
+    omniBackgroundImage.Name = "OmniLogoBackground"
+    omniBackgroundImage.BackgroundTransparency = 1
+    omniBackgroundImage.BorderSizePixel = 0
+    omniBackgroundImage.Position = UDim2.fromScale(0, 0)
+    omniBackgroundImage.Size = UDim2.fromScale(1, 1)
+    omniBackgroundImage.ScaleType = Enum.ScaleType.Crop
+    omniBackgroundImage.ImageTransparency = 0.08
+    omniBackgroundImage.ZIndex = 1  
+    omniBackgroundImage.Parent = Main
+
+    local omniBackgroundTint = Instance.new("Frame")
+    omniBackgroundTint.Name = "OmniBackgroundTint"
+    omniBackgroundTint.BackgroundColor3 = Color3.fromRGB(12, 14, 16)
+    omniBackgroundTint.BackgroundTransparency = 0.78
+    omniBackgroundTint.BorderSizePixel = 0
+    omniBackgroundTint.Position = UDim2.fromScale(0, 0)
+    omniBackgroundTint.Size = UDim2.fromScale(1, 1)
+    omniBackgroundTint.ZIndex = 1 
+    omniBackgroundTint.Parent = Main
+
+    local omniBackgroundAsset = loadOmniBackgroundAsset()
+    if omniBackgroundAsset then
+        omniBackgroundImage.Image = omniBackgroundAsset
+        omniBackgroundImage.Visible = true
+        print("[OMNI] Logo background loaded successfully.")
+    else
+        omniBackgroundImage.Visible = false
+    end
 
     local uiScale = Instance.new("UIScale")
     uiScale.Name = "OmniScale"
@@ -703,7 +809,9 @@
     TopBar.Name = "TopBar"
     TopBar.Parent = Main
     TopBar.Size = UDim2.new(1, 0, 0, 68)
-    TopBar.BackgroundColor3 = Color3.fromRGB(15, 15, 25)
+    TopBar.BackgroundColor3 = Color3.fromRGB(22, 22, 22)
+    TopBar.BackgroundTransparency = 0.24
+    TopBar.ZIndex = 2
     TopBar.BorderSizePixel = 0
 
     local TopStroke = Instance.new("UIStroke")
@@ -718,13 +826,13 @@
     titleLabel.Position = UDim2.new(0, 0, 0, 0)
     titleLabel.Size = UDim2.new(1, 0, 0, 31)
     titleLabel.Text = "OMNI"
-    titleLabel.TextColor3 = Color3.fromRGB(220, 220, 255)
+    titleLabel.TextColor3 = Color3.fromRGB(0, 220, 110)
     titleLabel.Font = Enum.Font.GothamBlack
     titleLabel.TextSize = 19
     titleLabel.TextXAlignment = Enum.TextXAlignment.Center
     titleLabel.ZIndex = 10
     local titleGradient = Instance.new("UIGradient")
-    titleGradient.Color = ColorSequence.new({ ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 255, 0)), ColorSequenceKeypoint.new(0.25, Color3.fromRGB(0, 125, 0)), ColorSequenceKeypoint.new(0.5, Color3.fromRGB(0, 125, 0)), ColorSequenceKeypoint.new(0.75, Color3.fromRGB(0, 75, 0)), ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 255, 0)) })
+    titleGradient.Color = ColorSequence.new(Color3.fromRGB(0, 220, 110), Color3.fromRGB(0, 220, 110))
     titleGradient.Parent = titleLabel
 
     local TabHolder = Instance.new("Frame")
@@ -748,6 +856,7 @@
     Content.Position = UDim2.fromOffset(10, 78)
     Content.Size = UDim2.new(1, -20, 1, -88)
     Content.BackgroundTransparency = 1
+    Content.ZIndex = 2 
 
     local tabDefinitions = {
 			Combat = { "Combat" },
@@ -883,7 +992,7 @@
     hudKeybindLabel.Size = UDim2.fromOffset(230, 0)
     hudKeybindLabel.AutomaticSize = Enum.AutomaticSize.Y
     hudKeybindLabel.TextYAlignment = Enum.TextYAlignment.Top
-    hudKeybindLabel.BackgroundColor3 = Color3.fromRGB(8, 8, 16)
+    hudKeybindLabel.BackgroundColor3 = Color3.fromRGB(22, 22, 22)
     hudKeybindLabel.BackgroundTransparency = 0.1
     hudKeybindLabel.Active = true
     hudKeybindLabel.BorderSizePixel = 0
@@ -1088,6 +1197,9 @@
     local function unloadUI()
         if uiUnloaded then return end
         uiUnloaded = true
+        pcall(function()
+            if _G.__OmniInventoryChecker then _G.__OmniInventoryChecker.destroy() end
+        end)
         if snowConnection then
             snowConnection:Disconnect()
             snowConnection = nil
@@ -1131,7 +1243,7 @@
     local function setActiveTab(tabName)
         for name, button in next, tabButtons do
             local on = name == tabName
-            button.BackgroundColor3 = on and Color3.fromRGB(18, 18, 30) or Color3.fromRGB(15, 15, 25)
+            button.BackgroundColor3 = on and Color3.fromRGB(30, 30, 30) or Color3.fromRGB(22, 22, 22)
             button.TextColor3 = on and uiAccentColor or Color3.fromRGB(200, 200, 215)
             local stroke = button:FindFirstChildOfClass("UIStroke")
             if stroke then stroke.Transparency = on and 0 or 0.55 end
@@ -1161,7 +1273,7 @@
             end
             for buttonName, button in next, buttons do
                 local on = buttonName == name
-                button.BackgroundColor3 = on and Color3.fromRGB(18, 18, 30) or Color3.fromRGB(18, 18, 30)
+                button.BackgroundColor3 = on and Color3.fromRGB(30, 30, 30) or Color3.fromRGB(30, 30, 30)
                 button.TextColor3 = on and uiAccentColor or Color3.fromRGB(225, 225, 235)
             end
         end
@@ -1173,7 +1285,7 @@
             button.Parent = bar
             button.LayoutOrder = index
             button.Size = UDim2.new(1 / #names, -3, 1, 0)
-            button.BackgroundColor3 = Color3.fromRGB(18, 18, 30)
+            button.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
             button.BorderSizePixel = 0
             button.Text = name
             button.TextColor3 = Color3.fromRGB(225, 225, 235)
@@ -2257,6 +2369,578 @@
         renderInventoryViewer(true)
     end
 
+
+
+    _G.__OmniInventoryChecker = (function()
+        local state = {
+            enabled = false, targetPlayers = true, bodies = false, ai = false,
+            showValue = false, showKDR = false, showReports = false, showTeam = false, showHours = false,
+            mode = "Text", filterMode = "Off", minValue = 10000, customItems = {}, customCursor = 1, radius = 160,
+            textSize = 12, lineHeight = 15, updateRate = 10, transparency = 15,
+            target = nil, targetKind = nil, lastScan = 0, lastRender = 0,
+            aiModels = {}, aiRefresh = 0, lastSignature = nil,
+        }
+        local root, targetLabel, statsLabel, valueLabel, textScroll, imageScroll
+        local textLayout, imageLayout
+        local dragging, dragStart, frameStart = false, nil, nil
+        local screen
+        local function build()
+            if root and root.Parent then
+                root.BackgroundTransparency = 0
+                return
+            end
+            local coreGui = game:GetService("CoreGui")
+            local old = coreGui:FindFirstChild("OmniInventoryCheckerScreen")
+            if old then old:Destroy() end
+
+           
+            screen = Instance.new("ScreenGui")
+            screen.Name = "OmniInventoryCheckerScreen"
+            screen.ResetOnSpawn = false
+            screen.IgnoreGuiInset = true
+            screen.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+            screen.Enabled = false
+            screen.Parent = coreGui
+
+            root = Instance.new("Frame", screen)
+            root.Name = "InventoryViewerRoot"
+            root.Size = UDim2.fromOffset(370, 470)
+            root.Position = UDim2.fromOffset(math.max(0, (workspace.CurrentCamera and workspace.CurrentCamera.ViewportSize.X or 1280) - 390), 20)
+            root.BackgroundColor3 = Color3.fromRGB(22, 22, 22)
+            root.BackgroundTransparency = 0
+            root.BorderSizePixel = 0
+            root.Active = true
+            root.ClipsDescendants = true
+            root.Visible = false
+            root.ZIndex = 10
+
+            local rootCorner = Instance.new("UICorner", root)
+            rootCorner.CornerRadius = UDim.new(0, 0)
+            local outline = Instance.new("UIStroke", root)
+            outline.Color = Color3.fromRGB(50, 50, 50)
+            outline.Thickness = 1
+
+            local header = Instance.new("Frame", root)
+            header.Name = "Header"
+            header.Size = UDim2.new(1, 0, 0, 28)
+            header.BackgroundTransparency = 1
+            header.BorderSizePixel = 0
+            header.Active = true
+            header.ZIndex = 10
+
+            local accent = Instance.new("Frame", header)
+            accent.Name = "AccentBar"
+            accent.Size = UDim2.new(1, 0, 0, 1)
+            accent.Position = UDim2.fromOffset(0, 0)
+            accent.BackgroundColor3 = Color3.fromRGB(0, 220, 110)
+            accent.BorderSizePixel = 0
+            accent.ZIndex = 11
+
+            local fade = Instance.new("Frame", root)
+            fade.Name = "Fade"
+            fade.BackgroundColor3 = Color3.new(1, 1, 1)
+            fade.BorderSizePixel = 0
+            fade.Size = UDim2.new(1, 0, 0, 20)
+            fade.Position = UDim2.fromOffset(0, 1)
+            fade.ZIndex = 1
+            fade.Active = false
+            local fadeGradient = Instance.new("UIGradient", fade)
+            fadeGradient.Rotation = 90
+            fadeGradient.Color = ColorSequence.new({
+                ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 190, 95)),
+                ColorSequenceKeypoint.new(1, Color3.fromRGB(22, 22, 22)),
+            })
+            fadeGradient.Offset = Vector2.new(0, -0.55)
+
+            local title = Instance.new("TextLabel", header)
+            title.Name = "Title"
+            title.BackgroundTransparency = 1
+            title.Position = UDim2.fromOffset(6, 3)
+            title.Size = UDim2.new(1, -10, 0, 14)
+            title.Text = "Inventory"
+            title.Font = Enum.Font.GothamSemibold
+            title.TextSize = 14
+            title.TextColor3 = Color3.fromRGB(0, 220, 110)
+            title.TextStrokeTransparency = 0
+            title.TextXAlignment = Enum.TextXAlignment.Left
+            title.ZIndex = 12
+
+            targetLabel = Instance.new("TextLabel", root)
+            targetLabel.Name = "Target"
+            targetLabel.BackgroundTransparency = 1
+            targetLabel.Position = UDim2.fromOffset(10, 32)
+            targetLabel.Size = UDim2.new(1, -20, 0, 17)
+            targetLabel.Font = Enum.Font.GothamSemibold
+            targetLabel.TextSize = 14
+            targetLabel.TextColor3 = Color3.fromRGB(235, 235, 235)
+            targetLabel.TextStrokeTransparency = 0
+            targetLabel.TextXAlignment = Enum.TextXAlignment.Left
+            targetLabel.Text = "Waiting for target..."
+            targetLabel.ZIndex = 12
+
+            statsLabel = Instance.new("TextLabel", root)
+            statsLabel.Name = "Stats"
+            statsLabel.BackgroundTransparency = 1
+            statsLabel.Position = UDim2.fromOffset(10, 50)
+            statsLabel.Size = UDim2.new(1, -20, 0, 26)
+            statsLabel.Font = Enum.Font.Gotham
+            statsLabel.TextSize = 12
+            statsLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
+            statsLabel.TextStrokeTransparency = 0.5
+            statsLabel.TextXAlignment = Enum.TextXAlignment.Left
+            statsLabel.TextYAlignment = Enum.TextYAlignment.Top
+            statsLabel.TextWrapped = true
+            statsLabel.Text = ""
+            statsLabel.ZIndex = 12
+
+            valueLabel = Instance.new("TextLabel", root)
+            valueLabel.Name = "Value"
+            valueLabel.BackgroundTransparency = 1
+            valueLabel.Position = UDim2.fromOffset(10, 77)
+            valueLabel.Size = UDim2.new(1, -20, 0, 15)
+            valueLabel.Font = Enum.Font.GothamSemibold
+            valueLabel.TextSize = 12
+            valueLabel.TextColor3 = Color3.fromRGB(0, 220, 110)
+            valueLabel.TextStrokeTransparency = 0
+            valueLabel.TextXAlignment = Enum.TextXAlignment.Left
+            valueLabel.Text = ""
+            valueLabel.ZIndex = 12
+
+            local divider = Instance.new("Frame", root)
+            divider.Name = "Divider"
+            divider.Position = UDim2.fromOffset(8, 96)
+            divider.Size = UDim2.new(1, -16, 0, 1)
+            divider.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+            divider.BorderSizePixel = 0
+            divider.ZIndex = 12
+
+            textScroll = Instance.new("ScrollingFrame", root)
+            textScroll.Name = "TextList"
+            textScroll.Position = UDim2.fromOffset(8, 102)
+            textScroll.Size = UDim2.new(1, -16, 1, -110)
+            textScroll.BackgroundTransparency = 1
+            textScroll.BorderSizePixel = 0
+            textScroll.ScrollBarThickness = 4
+            textScroll.ScrollBarImageColor3 = Color3.fromRGB(0, 220, 110)
+            textScroll.CanvasSize = UDim2.new()
+            textScroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
+            textScroll.ZIndex = 12
+            textLayout = Instance.new("UIListLayout", textScroll)
+            textLayout.Name = "InventoryRowsLayout"
+            textLayout.SortOrder = Enum.SortOrder.LayoutOrder
+            textLayout.Padding = UDim.new(0, 2)
+            local textPadding = Instance.new("UIPadding", textScroll)
+            textPadding.PaddingLeft = UDim.new(0, 2)
+            textPadding.PaddingRight = UDim.new(0, 2)
+            textPadding.PaddingTop = UDim.new(0, 3)
+            textPadding.PaddingBottom = UDim.new(0, 3)
+
+            imageScroll = Instance.new("ScrollingFrame", root)
+            imageScroll.Name = "ImageGrid"
+            imageScroll.Position = textScroll.Position
+            imageScroll.Size = textScroll.Size
+            imageScroll.BackgroundTransparency = 1
+            imageScroll.BorderSizePixel = 0
+            imageScroll.ScrollBarThickness = 4
+            imageScroll.ScrollBarImageColor3 = Color3.fromRGB(0, 220, 110)
+            imageScroll.CanvasSize = UDim2.new()
+            imageScroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
+            imageScroll.Visible = false
+            imageScroll.ZIndex = 12
+            imageLayout = Instance.new("UIGridLayout", imageScroll)
+            imageLayout.Name = "InventoryGridLayout"
+            imageLayout.CellSize = UDim2.fromOffset(64, 72)
+            imageLayout.CellPadding = UDim2.fromOffset(4, 4)
+            imageLayout.SortOrder = Enum.SortOrder.LayoutOrder
+            local imagePadding = Instance.new("UIPadding", imageScroll)
+            imagePadding.PaddingLeft = UDim.new(0, 3)
+            imagePadding.PaddingRight = UDim.new(0, 3)
+            imagePadding.PaddingTop = UDim.new(0, 3)
+            imagePadding.PaddingBottom = UDim.new(0, 3)
+
+            local function clearScroll(scroll, layout)
+                for _, child in ipairs(scroll:GetChildren()) do
+                    if child ~= layout and not child:IsA("UIPadding") then child:Destroy() end
+                end
+            end
+            state.clearScroll = clearScroll
+
+            header.InputBegan:Connect(function(input)
+                if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                    dragging = true
+                    dragStart = Vector2.new(input.Position.X, input.Position.Y)
+                    frameStart = Vector2.new(root.Position.X.Offset, root.Position.Y.Offset)
+                end
+            end)
+            header.InputEnded:Connect(function(input)
+                if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                    dragging = false
+                end
+            end)
+            UIS.InputChanged:Connect(function(input)
+                if not dragging or not root or not root.Parent then return end
+                if input.UserInputType ~= Enum.UserInputType.MouseMovement and input.UserInputType ~= Enum.UserInputType.Touch then return end
+                local delta = Vector2.new(input.Position.X, input.Position.Y) - dragStart
+                local viewport = workspace.CurrentCamera and workspace.CurrentCamera.ViewportSize or Vector2.new(1280, 720)
+                local pos = frameStart + delta
+                pos = Vector2.new(math.clamp(pos.X, 0, math.max(0, viewport.X - 370)), math.clamp(pos.Y, 0, math.max(0, viewport.Y - 470)))
+                root.Position = UDim2.fromOffset(pos.X, pos.Y)
+            end)
+        end
+        local function itemInfo(item)
+            local defs = ReplicatedStorage:FindFirstChild("ItemsList")
+            local def = defs and defs:FindFirstChild(item.Name)
+            local props = def and def:FindFirstChild("ItemProperties")
+            local price = tonumber((props and props:GetAttribute("Price")) or item:GetAttribute("Price")) or 0
+            local amount = math.max(1, tonumber(item:GetAttribute("Amount")) or 1)
+            local typ = tostring((props and props:GetAttribute("ItemType")) or item:GetAttribute("ItemType") or "")
+            local slot = tostring((props and props:GetAttribute("Slot")) or item:GetAttribute("Slot") or "")
+            return {name = item.Name, price = price, amount = amount, type = typ, slot = slot, known = def ~= nil}
+        end
+        local function passes(info)
+            if state.filterMode == "Gear Only" then
+                local combined = (info.type .. " " .. info.slot .. " " .. info.name):lower()
+                for _, key in ipairs({"weapon","armor","attach","ammo","container","clothing","medicine","helmet","vest","rig","backpack"}) do
+                    if combined:find(key, 1, true) then return true end
+                end
+                return false
+            elseif state.filterMode == "Valuables" then
+                return info.price >= state.minValue
+            elseif state.filterMode == "Custom" then
+                return state.customItems[info.name] == true
+            end
+            return true
+        end
+        local function collect(target, kind)
+            local dataRoot = ReplicatedStorage:FindFirstChild("Players")
+            local playerData = target and dataRoot and dataRoot:FindFirstChild(target.Name)
+            local model = kind == "player" and target.Character or target
+            local inventory = (playerData and playerData:FindFirstChild("Inventory")) or (model and model:FindFirstChild("Inventory"))
+            local hotbar = (playerData and playerData:FindFirstChild("Hotbar")) or (model and model:FindFirstChild("Hotbar"))
+            local entries, total, seen = {}, 0, setmetatable({}, {__mode = "k"})
+            local function add(item, group, depth)
+                if not item or seen[item] or depth > 4 then return end
+                seen[item] = true
+                local info = itemInfo(item)
+                local nested = item:FindFirstChild("Inventory")
+                local attachments = item:FindFirstChild("Attachments")
+                if info.known and passes(info) then
+                    entries[#entries + 1] = {group = group, info = info}
+                    total += info.price * info.amount
+                end
+                if attachments then for _, child in ipairs(attachments:GetChildren()) do add(child, "ATTACHMENTS", depth + 1) end end
+                if nested then for _, child in ipairs(nested:GetChildren()) do add(child, "LOOT", depth + 1) end end
+                if not info.known and not nested and not attachments then
+                    local folder = item:FindFirstChildOfClass("Folder")
+                    if folder and folder.Name == "Inventory" then
+                        for _, child in ipairs(folder:GetChildren()) do add(child, "LOOT", depth + 1) end
+                    end
+                end
+            end
+            if hotbar then for _, item in ipairs(hotbar:GetChildren()) do add(item, "HOTBAR", 0) end end
+            if inventory then
+                local defs = ReplicatedStorage:FindFirstChild("ItemsList")
+                for _, slot in ipairs(inventory:GetChildren()) do
+                    local nested = slot:FindFirstChild("Inventory")
+                    if nested and not (defs and defs:FindFirstChild(slot.Name)) then
+                        for _, item in ipairs(nested:GetChildren()) do add(item, "LOOT", 0) end
+                    else
+                        add(slot, "GEAR", 0)
+                    end
+                end
+            end
+            return entries, total, playerData
+        end
+        local function getStats(playerData, displayName)
+            local result = {}
+            local status = playerData and playerData:FindFirstChild("Status")
+            local journey = status and status:FindFirstChild("Journey")
+            local stats = journey and journey:FindFirstChild("Statistics")
+            if state.showKDR and stats then
+                local kdr = stats:GetAttribute("KDR") or stats:GetAttribute("KD")
+                local kills = tonumber(stats:GetAttribute("Kills") or stats:GetAttribute("Eliminations"))
+                local deaths = tonumber(stats:GetAttribute("Deaths"))
+                if kdr ~= nil then table.insert(result, "K/D " .. tostring(kdr))
+                elseif kills and deaths then table.insert(result, "K/D " .. string.format("%.2f", kills / math.max(1, deaths))) end
+            end
+            if state.showHours and stats then
+                local played = stats:GetAttribute("TimePlayed")
+                if type(played) == "number" then table.insert(result, string.format("%.1fh", played / 3600)) end
+            end
+            if state.showReports and status then
+                local uac = status:FindFirstChild("UAC")
+                local reports = uac and uac:FindFirstChild("Reports")
+                local count = reports and (reports:GetAttribute("1") or reports:GetAttribute("Count"))
+                if count ~= nil then table.insert(result, tostring(count) .. " reports") end
+            end
+            if state.showTeam and displayName then
+                local clans = ReplicatedStorage:FindFirstChild("Clans")
+                local team
+                if clans then for _, clan in ipairs(clans:GetChildren()) do if clan:FindFirstChild(displayName) then team = clan.Name break end end end
+                table.insert(result, "Team: " .. (team or "none"))
+            end
+            return table.concat(result, "  |  ")
+        end
+        local function nearestTarget()
+            local camera = workspace.CurrentCamera
+            if not camera then return nil end
+            local mouse = UIS:GetMouseLocation()
+            local best, bestKind, bestDist
+            bestDist = state.radius
+            local function consider(target, kind, part)
+                if not part or not part:IsA("BasePart") then return end
+                local point, onScreen = camera:WorldToViewportPoint(part.Position)
+                if not onScreen or point.Z <= 0 then return end
+                local distance = (Vector2.new(point.X, point.Y) - mouse).Magnitude
+                if distance <= bestDist then best, bestKind, bestDist = target, kind, distance end
+            end
+            if state.targetPlayers then
+                for _, plr in ipairs(game:GetService("Players"):GetPlayers()) do
+                    if plr ~= Player and plr.Character then
+                        local hum = plr.Character:FindFirstChildOfClass("Humanoid")
+                        local part = plr.Character:FindFirstChild("HumanoidRootPart")
+                        if hum and hum.Health > 0 then consider(plr, "player", part) end
+                    end
+                end
+            end
+            if state.bodies then
+                local dropped = workspace:FindFirstChild("DroppedItems")
+                if dropped then
+                    for _, body in ipairs(dropped:GetChildren()) do
+                        if body:IsA("Model") and body:FindFirstChildOfClass("Humanoid") and (body:FindFirstChild("Head") or body:FindFirstChildWhichIsA("BasePart")) then
+                            consider(body, "body", body:FindFirstChild("Head") or body:FindFirstChildWhichIsA("BasePart"))
+                        end
+                    end
+                end
+            end
+            if state.ai then
+                local now = os.clock()
+                if now - state.aiRefresh > 2 then
+                    table.clear(state.aiModels)
+                    local zones = workspace:FindFirstChild("AiZones")
+                    if zones then
+                        for _, obj in ipairs(zones:GetDescendants()) do
+                            if obj:IsA("Model") then state.aiModels[#state.aiModels + 1] = obj end
+                        end
+                    end
+                    state.aiRefresh = now
+                end
+                for _, obj in ipairs(state.aiModels) do
+                    if obj.Parent then
+                        local hum = obj:FindFirstChildOfClass("Humanoid")
+                        local part = obj:FindFirstChild("HumanoidRootPart") or obj:FindFirstChild("Head") or obj:FindFirstChildWhichIsA("BasePart")
+                        if hum and hum.Health > 0 and (obj:FindFirstChild("Inventory") or (ReplicatedStorage:FindFirstChild("Players") and ReplicatedStorage.Players:FindFirstChild(obj.Name))) then
+                            consider(obj, "ai", part)
+                        end
+                    end
+                end
+            end
+            return best, bestKind
+        end
+        local function render(target, kind)
+            build()
+            local entries, total, playerData = collect(target, kind)
+            targetLabel.Text = (kind == "body" and "[BODY] " or kind == "ai" and "[AI] " or "") .. target.Name
+            statsLabel.Text = getStats(playerData, target.Name)
+            valueLabel.Text = state.showValue and ("Estimated value: " .. tostring(math.floor(total)) .. " RUB  |  " .. #entries .. " items") or (#entries .. " items")
+            textScroll.Visible = state.mode == "Text"
+            imageScroll.Visible = state.mode == "Image"
+            state.clearScroll(textScroll, textLayout)
+            state.clearScroll(imageScroll, imageLayout)
+            local order, lastGroup = 0, nil
+            for _, entry in ipairs(entries) do
+                order += 1
+                local info = entry.info
+                if state.mode == "Text" then
+                    if entry.group ~= lastGroup then
+                        lastGroup = entry.group
+                        local heading = Instance.new("TextLabel")
+                        heading.Parent = textScroll
+                        heading.BackgroundTransparency = 1
+                        heading.Size = UDim2.new(1, -4, 0, 18)
+                        heading.Font = Enum.Font.GothamBold
+                        heading.TextSize = 12
+                        heading.TextColor3 = Color3.fromRGB(0, 220, 110)
+                        heading.TextXAlignment = Enum.TextXAlignment.Left
+                        heading.Text = entry.group
+                        heading.LayoutOrder = order
+                        order += 1
+                    end
+                    local row = Instance.new("TextLabel")
+                    row.Parent = textScroll
+                    row.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+                    row.BackgroundTransparency = 0
+                    row.BorderSizePixel = 0
+                    row.Size = UDim2.new(1, -4, 0, math.clamp(state.lineHeight, 12, 24))
+                    row.Font = Enum.Font.Gotham
+                    row.TextSize = math.clamp(state.textSize, 10, 18)
+                    row.TextColor3 = Color3.fromRGB(225, 225, 235)
+                    row.TextStrokeTransparency = 0.5
+                    row.TextXAlignment = Enum.TextXAlignment.Left
+                    row.TextTruncate = Enum.TextTruncate.AtEnd
+                    row.Text = "  " .. info.name .. (info.amount > 1 and ("  x" .. info.amount) or "") .. (state.showValue and ("  •  " .. math.floor(info.price * info.amount) .. " RUB") or "")
+                    row.LayoutOrder = order
+                else
+                    local cell = Instance.new("Frame")
+                    cell.Parent = imageScroll
+                    cell.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+                    cell.BorderSizePixel = 0
+                    cell.LayoutOrder = order
+                    local cellStroke = Instance.new("UIStroke", cell)
+                    cellStroke.Color = Color3.fromRGB(50, 50, 50)
+                    cellStroke.Thickness = 1
+                    local icon = Instance.new("ImageLabel")
+                    icon.Parent = cell
+                    icon.BackgroundTransparency = 1
+                    icon.Position = UDim2.fromOffset(5, 3)
+                    icon.Size = UDim2.fromOffset(54, 48)
+                    icon.ScaleType = Enum.ScaleType.Fit
+                    local defs = ReplicatedStorage:FindFirstChild("ItemsList")
+                    local def = defs and defs:FindFirstChild(info.name)
+                    local props = def and def:FindFirstChild("ItemProperties")
+                    local itemIconObject = props and props:FindFirstChild("ItemIcon")
+                    if itemIconObject and itemIconObject:IsA("ImageLabel") then
+                        icon.Image = itemIconObject.Image
+                    elseif itemIconObject and itemIconObject:IsA("StringValue") then
+                        icon.Image = itemIconObject.Value
+                    else
+                        icon.Image = itemIcon(info.name)
+                    end
+                    if icon.Image == "" then
+                        local fallback = Instance.new("TextLabel")
+                        fallback.Parent = cell
+                        fallback.Position = UDim2.fromOffset(2, 4)
+                        fallback.Size = UDim2.new(1, -4, 0, 43)
+                        fallback.TextWrapped = true
+                        fallback.BackgroundTransparency = 1
+                        fallback.Text = info.name
+                        fallback.TextColor3 = Color3.fromRGB(180, 180, 195)
+                        fallback.Font = Enum.Font.Code
+                        fallback.TextSize = 9
+                    end
+                    local caption = Instance.new("TextLabel")
+                    caption.Parent = cell
+                    caption.Position = UDim2.new(0, 2, 1, -19)
+                    caption.Size = UDim2.new(1, -4, 0, 16)
+                    caption.BackgroundTransparency = 1
+                    caption.Text = info.name .. (info.amount > 1 and (" x" .. info.amount) or "")
+                    caption.TextColor3 = Color3.fromRGB(230, 230, 240)
+                    caption.Font = Enum.Font.Code
+                    caption.TextSize = 8
+                    caption.TextTruncate = Enum.TextTruncate.AtEnd
+                    if info.amount > 1 then
+                        local amountBadge = Instance.new("TextLabel", cell)
+                        amountBadge.BackgroundColor3 = Color3.fromRGB(0, 220, 110)
+                        amountBadge.BorderSizePixel = 0
+                        amountBadge.Position = UDim2.fromOffset(42, 2)
+                        amountBadge.Size = UDim2.fromOffset(20, 13)
+                        amountBadge.Font = Enum.Font.Code
+                        amountBadge.TextSize = 8
+                        amountBadge.TextColor3 = Color3.new(1, 1, 1)
+                        amountBadge.Text = "x" .. tostring(info.amount)
+                    end
+                end
+            end
+            if #entries == 0 then
+                local empty = Instance.new("TextLabel")
+                empty.Parent = state.mode == "Text" and textScroll or imageScroll
+                empty.BackgroundTransparency = 1
+                empty.Size = UDim2.new(1, -4, 0, 24)
+                empty.Text = "No inventory items found"
+                empty.TextColor3 = Color3.fromRGB(140, 140, 155)
+                empty.Font = Enum.Font.Code
+                empty.TextSize = 10
+            end
+        end
+        local api = {}
+        function api.setEnabled(value)
+            state.enabled = value and true or false
+            if state.enabled then
+                build()
+                if screen then screen.Enabled = true end
+                root.Visible = true
+                state.lastRender = 0
+            elseif root then
+                root.Visible = false
+                if screen then screen.Enabled = false end
+            end
+        end
+        function api.getEnabled() return state.enabled end
+        function api.setMode(value)
+            state.mode = value
+            state.lastRender = 0
+        end
+        function api.cycleFilter()
+            local modes = {"Off", "Gear Only", "Valuables", "Custom"}
+            local index = table.find(modes, state.filterMode) or 1
+            state.filterMode = modes[index % #modes + 1]
+            state.lastRender = 0
+            return state.filterMode
+        end
+        function api.getFilter() return state.filterMode end
+        function api.cycleCustomItem()
+            local defs = ReplicatedStorage:FindFirstChild("ItemsList")
+            local names = {}
+            if defs then for _, item in ipairs(defs:GetChildren()) do names[#names + 1] = item.Name end end
+            table.sort(names)
+            if #names == 0 then return "No items available" end
+            local name = names[state.customCursor]
+            state.customCursor = state.customCursor % #names + 1
+            state.customItems[name] = not state.customItems[name]
+            state.lastRender = 0
+            return (state.customItems[name] and "+ " or "- ") .. name
+        end
+        function api.setOption(key, value)
+            state[key] = value
+            if key == "transparency" and root then root.BackgroundTransparency = math.clamp(value / 100, 0, 0.95) end
+            state.lastRender = 0
+        end
+        function api.getOption(key) return state[key] end
+        function api.destroy()
+            state.enabled = false
+            if screen then pcall(function() screen:Destroy() end); screen = nil end
+            if root then pcall(function() root:Destroy() end); root = nil end
+        end
+        function api.update()
+            if not state.enabled then return end
+            local now = os.clock()
+            if now - state.lastScan < 1 / math.clamp(state.updateRate, 5, 10) then return end
+            state.lastScan = now
+            local target, kind = nearestTarget()
+            if not target then
+
+                state.target, state.targetKind = nil, nil
+                if not root or not root.Parent then build() end
+                if screen then screen.Enabled = true end
+                if root then root.Visible = true end
+                if targetLabel then targetLabel.Text = "Waiting for target..." end
+                if statsLabel then statsLabel.Text = "Move your cursor over a player or enabled target" end
+                if valueLabel then valueLabel.Text = "" end
+                if textScroll and imageScroll then
+                    textScroll.Visible = state.mode == "Text"
+                    imageScroll.Visible = state.mode == "Image"
+                    state.clearScroll(textScroll, textLayout)
+                    state.clearScroll(imageScroll, imageLayout)
+                end
+                return
+            end
+            if not root or not root.Parent then build() end
+            if screen then screen.Enabled = true end
+            root.Visible = true
+            if target ~= state.target or kind ~= state.targetKind or now - state.lastRender >= 0.5 then
+                state.target, state.targetKind, state.lastRender = target, kind, now
+                render(target, kind)
+            end
+        end
+        task.spawn(function()
+            while HudGui.Parent and not uiUnloaded do
+                if state.enabled then pcall(api.update) end
+                task.wait(0.05)
+            end
+        end)
+        return api
+    end)()
+
     local PlayersService = game:GetService("Players")
     local espState = {
         enabled = false,
@@ -2316,7 +3000,7 @@
             get = function() return espColors[key] end,            set = function(color) espColors[key] = color end,
         }
     end
-    local function applyHealthBarColors()
+    function applyHealthBarColors()
         local sequence = ColorSequence.new({
             ColorSequenceKeypoint.new(0, espHealthColors.top),
             ColorSequenceKeypoint.new(1, espHealthColors.bottom),
@@ -2328,9 +3012,18 @@
             end
         end
     end
-    local aimState = {
+    aimState = {
         silentAim = false,
         instaHit = false,
+        triggerbot = false,
+        triggerFovSource = "Silent Aim FOV",
+        triggerDelay = 50,
+        triggerChance = 100,
+        triggerTargetAI = true,
+        triggerTarget = nil,
+        triggerReadyAt = 0,
+        triggerHeld = false,
+        triggerPressAt = 0,
         fov = 200,
         target = nil,
         targetPart = nil,
@@ -2511,8 +3204,8 @@
     end)()
 
     do
-        local camera = workspace.CurrentCamera
-        local existing = camera and camera:FindFirstChildOfClass("Model")
+        camera = workspace.CurrentCamera
+        existing = camera and camera:FindFirstChildOfClass("Model")
         if existing then VMChams.Watch(existing) end
     end
 
@@ -3140,13 +3833,13 @@
         end
     end))
 
-    local function characterAlive(character)
+    function characterAlive(character)
         if not character then return false end
         local humanoid = character:FindFirstChildOfClass("Humanoid")
         return humanoid ~= nil and humanoid.Health > 0
     end
 
-    local function onSameTeam(otherPlayer)
+    function onSameTeam(otherPlayer)
         if otherPlayer == Player then return true end
         if not espState.teamCheck then return false end
         if not Player.Team or not otherPlayer.Team then return false end
@@ -3161,7 +3854,7 @@
     espGui.Enabled = true
     espGui.Parent = Player:WaitForChild("PlayerGui")
 
-    local espLayer = Instance.new("Frame")
+    espLayer = Instance.new("Frame")
     espLayer.Name = "ESPLayer"
     espLayer.Parent = espGui
     espLayer.Size = UDim2.fromScale(1, 1)
@@ -3169,27 +3862,27 @@
     espLayer.BorderSizePixel = 0
     espLayer.Visible = espState.enabled
 
-    local visualPortState = {
+    visualPortState = {
         corpses = false, ai = false, bosses = false, extractions = false, droppedItems = false,
         corpseDistance = true, aiDistance = true, bossDistance = true, snaplines = false,
         radar = false, radarRange = 250,
     }
-    local visualPortEntries = setmetatable({}, {__mode = "k"})
-    local bossNames = {Anton=true, Dozer=true, Whisper=true, ScavKing=true, Grif=true, BTR80=true, MI24V=true}
-    local function visualPortPart(model)
+    visualPortEntries = setmetatable({}, {__mode = "k"})
+    bossNames = {Anton=true, Dozer=true, Whisper=true, ScavKing=true, Grif=true, BTR80=true, MI24V=true}
+    function visualPortPart(model)
         if not model then return nil end
         if model:IsA("BasePart") then return model end
         return model:FindFirstChild("HumanoidRootPart") or model:FindFirstChild("UpperTorso")
             or model:FindFirstChild("Head") or model.PrimaryPart or model:FindFirstChildWhichIsA("BasePart", true)
     end
-    local function visualPortDestroy(model)
+    function visualPortDestroy(model)
         local entry = visualPortEntries[model]
         if not entry then return end
         if entry.gui then pcall(function() entry.gui:Destroy() end) end
         if entry.highlight then pcall(function() entry.highlight:Destroy() end) end
         visualPortEntries[model] = nil
     end
-    local function visualPortCreate(model, kind)
+    function visualPortCreate(model, kind)
         if not model or visualPortEntries[model] then return end
         local part = visualPortPart(model)
         if not part then return end
@@ -3229,7 +3922,7 @@
         end
         visualPortEntries[model] = {kind=kind, part=part, gui=gui, label=label, highlight=highlight, color=color}
     end
-    local function visualPortScan()
+    function visualPortScan()
         local dropped = workspace:FindFirstChild("DroppedItems")
         if dropped then
             for _, model in ipairs(dropped:GetChildren()) do
@@ -3376,7 +4069,7 @@
         end
     end))
 
-    local aimFovRing = Instance.new("Frame")
+    aimFovRing = Instance.new("Frame")
     aimFovRing.Name = "AimFOV"
     aimFovRing.Parent = espGui
     aimFovRing.AnchorPoint = Vector2.new(0.5, 0.5)
@@ -3384,18 +4077,18 @@
     aimFovRing.BorderSizePixel = 0
     aimFovRing.Visible = false
     aimFovRing.ZIndex = 2
-    local aimFovStroke = Instance.new("UIStroke")
+    aimFovStroke = Instance.new("UIStroke")
     aimFovStroke.Parent = aimFovRing
     aimFovStroke.Thickness = 1
     aimFovStroke.Transparency = 0.55
     aimFovStroke.Color = uiAccentColor
-    local aimFovCorner = Instance.new("UICorner")
+    aimFovCorner = Instance.new("UICorner")
     aimFovCorner.CornerRadius = UDim.new(1, 0)
     aimFovCorner.Parent = aimFovRing
 
-    local espEntries = {}
+    espEntries = {}
 
-    local skeletonBones = {
+    skeletonBones = {
         { "Head", "UpperTorso" },
         { "UpperTorso", "LowerTorso" },
         { "UpperTorso", "LeftUpperArm" },
@@ -3412,7 +4105,7 @@
         { "RightLowerLeg", "RightFoot" },
     }
 
-    local skeletonAliases = {
+    skeletonAliases = {
         UpperTorso = { "UpperTorso", "Torso" },
         LowerTorso = { "LowerTorso", "Torso" },
         LeftUpperArm = { "LeftUpperArm", "Left Arm" },
@@ -3429,7 +4122,7 @@
         RightFoot = { "RightFoot", "Right Leg" },
     }
 
-    local function skeletonPart(character, name)
+    function skeletonPart(character, name)
         local candidates = skeletonAliases[name] or { name }
         for _, partName in ipairs(candidates) do
             local part = character:FindFirstChild(partName)
@@ -3438,7 +4131,7 @@
         return nil
     end
 
-    local function makeLineFrame(parent, name)
+    function makeLineFrame(parent, name)
         local line = Instance.new("Frame")
         line.Name = name
         line.AnchorPoint = Vector2.new(0.5, 0.5)
@@ -3451,7 +4144,7 @@
         return line
     end
 
-    local function positionLine(line, fromPoint, toPoint)
+    function positionLine(line, fromPoint, toPoint)
         local dx = toPoint.X - fromPoint.X
         local dy = toPoint.Y - fromPoint.Y
         local length = math.sqrt(dx * dx + dy * dy)
@@ -3464,12 +4157,12 @@
         line.Rotation = math.deg(math.atan2(dy, dx))
     end
 
-    local function positionSegment(segment, x, y, width, height)
+    function positionSegment(segment, x, y, width, height)
         segment.Position = UDim2.fromOffset(x, y)
         segment.Size = UDim2.fromOffset(width, height)
     end
 
-    local function makeEspEntry(otherPlayer)
+    function makeEspEntry(otherPlayer)
         local box = Instance.new("Frame")
         box.Name = "ESP_" .. otherPlayer.Name
         box.BackgroundTransparency = 1
@@ -3648,18 +4341,18 @@
         return entry
     end
 
-    local visibilityParams = RaycastParams.new()
+    visibilityParams = RaycastParams.new()
     visibilityParams.FilterType = Enum.RaycastFilterType.Exclude
     visibilityParams.IgnoreWater = true
 
-    local function internalRaycast(origin, direction, params)
+    function internalRaycast(origin, direction, params)
         aimState.internal = true
         local result = workspace:Raycast(origin, direction, params)
         aimState.internal = false
         return result
     end
 
-    local function isTargetVisible(character, aimPoint)
+    function isTargetVisible(character, aimPoint)
         local camera = workspace.CurrentCamera
         if not camera then return true end
         local filter = {}
@@ -3671,7 +4364,7 @@
         return result == nil
     end
 
-    local function hideEspEntry(entry)
+    function hideEspEntry(entry)
         entry.box.Visible = false
         entry.tracer.Visible = false
         entry.headDot.Visible = false
@@ -3681,7 +4374,7 @@
         for index = 1, #entry.bones do entry.bones[index].Visible = false end
     end
 
-    local function uacPosition(playerName)
+    function uacPosition(playerName)
         local playersFolder = ReplicatedStorage:FindFirstChild("Players")
         local data = playersFolder and playersFolder:FindFirstChild(playerName)
         local status = data and data:FindFirstChild("Status")
@@ -3693,9 +4386,9 @@
         return nil
     end
 
-    local espLastPositions = {}
+    espLastPositions = {}
 
-    local function renderESP()
+    function renderESP()
         if not espState.enabled then
             for _, entry in next, espEntries do hideEspEntry(entry) end
             return
@@ -3843,7 +4536,7 @@
                                 entry.distanceLabel.Visible = espState.distance
                                 entry.distanceLabel.Text = tostring(meters) .. "m"
                                 entry.distanceLabel.TextColor3 = espColors.distance
-                                
+
                                 entry.visibilityLabel.Visible = espState.visibility
                                 entry.visibilityLabel.Text = entry.visible and "visible" or "hidden"
                                 entry.visibilityLabel.TextColor3 = entry.visible and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 50, 50)
@@ -3931,8 +4624,8 @@
     end))
 
     do
-        local chamsClock = 0
-        local chamsHue = 0
+        chamsClock = 0
+        chamsHue = 0
         table.insert(managedConnections, RunService.RenderStepped:Connect(function(deltaTime)
             if not espState.chams then return end
             chamsClock += deltaTime or 0
@@ -3999,9 +4692,9 @@
         table.clear(chamsOriginals)
     end
 
-    local aimParts = { "Head", "UpperTorso", "Torso", "LowerTorso", "HumanoidRootPart" }
+    aimParts = { "Head", "UpperTorso", "Torso", "LowerTorso", "HumanoidRootPart" }
 
-    local function resolveAimPart(character)
+    function resolveAimPart(character)
         if not character then return nil end
         for _, name in ipairs(aimParts) do
             local part = character:FindFirstChild(name)
@@ -4010,11 +4703,11 @@
         return character:FindFirstChildWhichIsA("BasePart")
     end
 
-    local function isDowned(character)
+    function isDowned(character)
         return character and character:GetAttribute("SD") ~= nil
     end
 
-    local function aimEye()
+    function aimEye()
         local character = Player.Character
         if not character then return nil end
         local root = character:FindFirstChild("HumanoidRootPart")
@@ -4059,7 +4752,7 @@
         return eye
     end
 
-    local function scanAimTarget()
+    function scanAimTarget()
         local camera = workspace.CurrentCamera
         if not camera then return end
         local mouseLocation = UIS:GetMouseLocation()
@@ -4197,8 +4890,8 @@
         camera.CFrame = camera.CFrame:Lerp(desired, alpha)
     end))
 
-    local aimHookReady = false
-    local function ensureAimHook()
+    aimHookReady = false
+    function ensureAimHook()
         if aimHookReady then return end
         if type(hookmetamethod) ~= "function" or type(checkcaller) ~= "function" or type(getnamecallmethod) ~= "function" then
             return
@@ -4361,20 +5054,122 @@
                 pcall(function() tool:Activate() end)
             end
         end
-        if aimState.triggerbot and aim.targetPart and aim.targetPart.Parent and mouseDown and not UIS:GetFocusedTextBox() then
-            local character = aim.targetPart.Parent
-            local humanoid = character and character:FindFirstChildOfClass("Humanoid")
-            local tool = character and character:FindFirstChildWhichIsA("Tool")
-            if tool and humanoid and humanoid.Health > 0 then
-                aimState.lastShot = now
-                pcall(function() tool:Activate() end)
+
+        if aimState.triggerbot and not UIS:GetFocusedTextBox() then
+            local camera = workspace.CurrentCamera
+            local triggerPart = nil
+            if camera then
+                local mouseLocation = UIS:GetMouseLocation()
+                local triggerFov = aimState.triggerFovSource == "Aimbot FOV"
+                    and LegitAim.fov or aimState.fov
+                local bestDistance = math.max(1, tonumber(triggerFov) or 200)
+                for _, otherPlayer in ipairs(PlayersService:GetPlayers()) do
+                    local character = otherPlayer.Character
+                    if otherPlayer ~= Player and not onSameTeam(otherPlayer)
+                        and characterAlive(character) and not isDowned(character) then
+                        local part = resolveAimPart(character)
+                        if part then
+                            local screen, onScreen = camera:WorldToViewportPoint(part.Position)
+                            if onScreen and screen.Z > 0 then
+                                local dx = screen.X - mouseLocation.X
+                                local dy = screen.Y - mouseLocation.Y
+                                local distance = math.sqrt(dx * dx + dy * dy)
+                                if distance <= bestDistance and isTargetVisible(character, part.Position) then
+                                    bestDistance = distance
+                                    triggerPart = part
+                                end
+                            end
+                        end
+                    end
+                end
+
+               
+                if aimState.triggerTargetAI then
+                    local aiZones = workspace:FindFirstChild("AiZones")
+                    if aiZones then
+                        for _, zone in ipairs(aiZones:GetChildren()) do
+                            for _, npc in ipairs(zone:GetChildren()) do
+                                local humanoid = npc:FindFirstChildOfClass("Humanoid")
+                                if humanoid and humanoid.Health > 0 then
+                                    local part = resolveAimPart(npc)
+                                    if part then
+                                        local screen, onScreen = camera:WorldToViewportPoint(part.Position)
+                                        if onScreen and screen.Z > 0 then
+                                            local dx = screen.X - mouseLocation.X
+                                            local dy = screen.Y - mouseLocation.Y
+                                            local distance = math.sqrt(dx * dx + dy * dy)
+                                            if distance <= bestDistance and isTargetVisible(npc, part.Position) then
+                                                bestDistance = distance
+                                                triggerPart = part
+                                            end
+                                        end
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end
             end
+
+            if triggerPart and triggerPart.Parent then
+                if aimState.triggerTarget ~= triggerPart then
+                    aimState.triggerTarget = triggerPart
+                    aimState.triggerReadyAt = now + (math.max(0, aimState.triggerDelay) / 1000)
+                end
+                if now >= aimState.triggerReadyAt and not aimState.triggerHeld then
+                    if math.random(1, 100) <= math.clamp(tonumber(aimState.triggerChance) or 100, 1, 100) then
+                        local env = (getgenv and getgenv()) or _G
+                        local press = env.mouse1press or mouse1press
+                        if type(press) == "function" then
+                            local ok = pcall(press)
+                            aimState.triggerHeld = ok
+                            aimState.triggerPressAt = now
+                        else
+                            local vim = game:GetService("VirtualInputManager")
+                            local point = UIS:GetMouseLocation()
+                            pcall(function()
+                                vim:SendMouseButtonEvent(point.X, point.Y, 0, true, game, 0)
+                                vim:SendMouseButtonEvent(point.X, point.Y, 0, false, game, 0)
+                            end)
+                            aimState.triggerHeld = true
+                            aimState.triggerPressAt = now
+                        end
+                    end
+                    aimState.triggerReadyAt = now + (math.max(0, aimState.triggerDelay) / 1000)
+                end
+            else
+                aimState.triggerTarget = nil
+                if aimState.triggerHeld and now - aimState.triggerPressAt >= 0.1 then
+                    local env = (getgenv and getgenv()) or _G
+                    local release = env.mouse1release or mouse1release
+                    if type(release) == "function" then
+                        pcall(release)
+                    else
+                        local vim = game:GetService("VirtualInputManager")
+                        local point = UIS:GetMouseLocation()
+                        pcall(function() vim:SendMouseButtonEvent(point.X, point.Y, 0, false, game, 0) end)
+                    end
+                    aimState.triggerHeld = false
+                end
+            end
+        elseif aimState.triggerHeld then
+            local env = (getgenv and getgenv()) or _G
+            local release = env.mouse1release or mouse1release
+            if type(release) == "function" then
+                pcall(release)
+            else
+                local vim = game:GetService("VirtualInputManager")
+                local point = UIS:GetMouseLocation()
+                pcall(function() vim:SendMouseButtonEvent(point.X, point.Y, 0, false, game, 0) end)
+            end
+            aimState.triggerHeld = false
+            aimState.triggerTarget = nil
         end
 
         renderESP()
     end))
 
-    local OMNI_WORLD = (function()
+    OMNI_WORLD = (function()
     local worldFx = {
         fullBright = false, noFog = false, removeGrass = false, potato = false,
         timeOn = false, timeVal = 12,
@@ -4902,6 +5697,13 @@
     KeybindAdd("instahit", "Insta Hit", function() return aimState.instaHit end, function(value)
         aimState.instaHit = value and true or false
     end)
+    KeybindAdd("triggerbot", "Triggerbot", function() return aimState.triggerbot end, function(value)
+        aimState.triggerbot = value and true or false
+        if not aimState.triggerbot then
+            aimState.triggerTarget = nil
+            aimState.triggerReadyAt = 0
+        end
+    end)
     KeybindAdd("esp", "ESP", function() return espState.enabled end, function(value)
         espState.enabled = value and true or false
         espLayer.Visible = espState.enabled
@@ -5037,14 +5839,14 @@
         ACBypass.Arm()
     end))
 
-    local SaveManager = (function()
+    SaveManager = (function()
     local SaveManager = {}
     SaveManager.Folder = "Omni"
     SaveManager.AutoLoadPath = "Omni/autoload.txt"
     SaveManager.Current = ""
 
     local function saveSafeName(value)
-        local cleaned = tostring(value or ""):gsub("%.json$", ""):gsub("[^%w%-%_ ]", ""):gsub("^%s+", ""):gsub("%s+$", "")
+        local cleaned = tostring(value or ""):gsub("%.json$", ""):gsub("[^%w%-_ ]", ""):gsub("^%s+", ""):gsub("%s+$", "")
         return cleaned:sub(1, 48)
     end
     SaveManager.SafeName = saveSafeName
@@ -5390,7 +6192,7 @@
     return SaveManager
     end)()
 
-    local function makeActionRow(parent, labelText, layoutOrder, absoluteY, buttonWidth)
+    function makeActionRow(parent, labelText, layoutOrder, absoluteY, buttonWidth)
         local row = Instance.new("Frame")
         row.Name = labelText:gsub("[^%w]", "") .. "Row"
         row.Parent = parent
@@ -5421,7 +6223,7 @@
         button.AnchorPoint = Vector2.new(1, 0.5)
         button.Position = UDim2.new(1, 0, 0.5, 0)
         button.Size = UDim2.fromOffset(buttonWidth or 44, 18)
-        button.BackgroundColor3 = Color3.fromRGB(18, 18, 30)
+        button.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
         button.BorderSizePixel = 0
         button.Text = ""
         button.TextColor3 = Color3.fromRGB(140, 140, 155)
@@ -5440,15 +6242,15 @@
         return row, button
     end
 
-    local colorPopup = nil
-    local function closeColorPicker()
+    colorPopup = nil
+    function closeColorPicker()
         if not colorPopup then return end
         local popup = colorPopup
         colorPopup = nil
         popup:Destroy()
     end
 
-    local function openColorPicker(anchor, getColor, setColor)
+    function openColorPicker(anchor, getColor, setColor)
         closeColorPicker()
         local camera = workspace.CurrentCamera
         local viewport = camera and camera.ViewportSize or Vector2.new(1920, 1080)
@@ -5722,7 +6524,7 @@
         applyColor()
     end
 
-    local function makeColorSwatch(parent, getColor, setColor)
+    function makeColorSwatch(parent, getColor, setColor)
         local swatch = Instance.new("TextButton")
         swatch.Name = "ColorSwatch"
         swatch.Parent = parent
@@ -5756,7 +6558,7 @@
         return swatch, refresh
     end
 
-    local function makeToggleRow(parent, labelText, getValue, setValue, layoutOrder, absoluteY, colorConfig, bindId)
+    function makeToggleRow(parent, labelText, getValue, setValue, layoutOrder, absoluteY, colorConfig, bindId)
         local row = Instance.new("Frame")
         row.Name = labelText:gsub("[^%w]", "") .. "Row"
         row.Parent = parent
@@ -5817,7 +6619,7 @@
             bindButton.AnchorPoint = Vector2.new(1, 0.5)
             bindButton.Position = UDim2.new(1, 0, 0.5, 0)
             bindButton.Size = UDim2.fromOffset(74, 20)
-            bindButton.BackgroundColor3 = Color3.fromRGB(18, 18, 30)
+            bindButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
             bindButton.BorderSizePixel = 0
             bindButton.Text = "None"
             bindButton.TextColor3 = Color3.fromRGB(225, 225, 235)
@@ -5858,7 +6660,7 @@
         return row, refresh
     end
 
-    local function makeSliderRow(parent, labelText, minValue, maxValue, step, getValue, setValue, layoutOrder, absoluteY)
+    function makeSliderRow(parent, labelText, minValue, maxValue, step, getValue, setValue, layoutOrder, absoluteY)
         step = step or 1
         local row = Instance.new("Frame")
         row.Name = labelText:gsub("[^%w]", "") .. "SliderRow"
@@ -5937,7 +6739,7 @@
         valueLabel.AnchorPoint = Vector2.new(1, 0.5)
         valueLabel.Position = UDim2.new(1, 0, 0.5, 0)
         valueLabel.Size = UDim2.fromOffset(44, 18)
-        valueLabel.BackgroundColor3 = Color3.fromRGB(18, 18, 30)
+        valueLabel.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
         valueLabel.BorderSizePixel = 0
         valueLabel.Text = ""
         valueLabel.TextColor3 = Color3.fromRGB(225, 225, 235)
@@ -5990,7 +6792,7 @@
         return row, refresh
     end
 
-    local function makeBindRow(parent, labelText, layoutOrder, absoluteY)
+    function makeBindRow(parent, labelText, layoutOrder, absoluteY)
         local row = Instance.new("Frame")
         row.Name = labelText:gsub("[^%w]", "") .. "BindRow"
         row.Parent = parent
@@ -6021,7 +6823,7 @@
         button.AnchorPoint = Vector2.new(1, 0.5)
         button.Position = UDim2.new(1, 0, 0.5, 0)
         button.Size = UDim2.fromOffset(78, 20)
-        button.BackgroundColor3 = Color3.fromRGB(18, 18, 30)
+        button.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
         button.BorderSizePixel = 0
         button.Text = "NONE"
         button.TextColor3 = Color3.fromRGB(225, 225, 235)
@@ -6038,7 +6840,7 @@
         return row, button
     end
 
-    local function showTab(tabName)
+    function showTab(tabName)
         closeColorPicker()
         setActiveTab(tabName)
         for i = 1, #tabConnections do
@@ -6078,7 +6880,9 @@
                   section.Size = UDim2.new(1, 0, 1, 0)
                   section.Visible = false
               end
-				section.BackgroundColor3 = Color3.fromRGB(15, 15, 25)
+				section.BackgroundColor3 = Color3.fromRGB(22, 22, 22)
+                section.BackgroundTransparency = 0.28 
+                section.ZIndex = 2
 				section.BorderSizePixel = 0
 
 				local sectionStroke = Instance.new("UIStroke")
@@ -6090,7 +6894,9 @@
 				title.Name = "Title"
 				title.Parent = section
 				title.Size = UDim2.new(1, 0, 0, 30)
-				title.BackgroundColor3 = Color3.fromRGB(18, 18, 30)
+				title.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+                title.BackgroundTransparency = 0.22 
+                title.ZIndex = 3
 				title.BorderSizePixel = 0
 				title.Text = innerName
 				title.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -6294,7 +7100,7 @@
                 imageModeButton.Parent = modeRow
                 imageModeButton.Position = UDim2.new(1, -132, 0, 3)
                 imageModeButton.Size = UDim2.fromOffset(64, 20)
-                imageModeButton.BackgroundColor3 = Color3.fromRGB(18, 18, 30)
+                imageModeButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
                 imageModeButton.BorderSizePixel = 0
                 imageModeButton.Text = "Image"
                 imageModeButton.Font = Enum.Font.Code
@@ -6312,7 +7118,7 @@
                 textModeButton.Parent = modeRow
                 textModeButton.Position = UDim2.new(1, -66, 0, 3)
                 textModeButton.Size = UDim2.fromOffset(64, 20)
-                textModeButton.BackgroundColor3 = Color3.fromRGB(18, 18, 30)
+                textModeButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
                 textModeButton.BorderSizePixel = 0
                 textModeButton.Text = "Text"
                 textModeButton.Font = Enum.Font.Code
@@ -6354,15 +7160,15 @@
                 local function refreshInventoryControls()
                     refreshInventoryToggle()
                     local imageOn = inventoryViewer.mode == "Image"
-                    imageModeButton.BackgroundColor3 = imageOn and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(18, 18, 30)
+                    imageModeButton.BackgroundColor3 = imageOn and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(30, 30, 30)
                     imageModeButton.TextColor3 = imageOn and Color3.fromRGB(10, 10, 18) or Color3.fromRGB(200, 200, 215)
                     imageModeStroke.Color = imageOn and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(60, 60, 72)
-                    textModeButton.BackgroundColor3 = (not imageOn) and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(18, 18, 30)
+                    textModeButton.BackgroundColor3 = (not imageOn) and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(30, 30, 30)
                     textModeButton.TextColor3 = (not imageOn) and Color3.fromRGB(10, 10, 18) or Color3.fromRGB(200, 200, 215)
                     textModeStroke.Color = (not imageOn) and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(60, 60, 72)
                     keybindButton.Text = inventoryViewer.capturing and "..." or inventoryKeyName()
                     keybindButton.TextColor3 = inventoryViewer.capturing and uiAccentColor or Color3.fromRGB(225, 225, 235)
-                    keybindButton.BackgroundColor3 = inventoryViewer.capturing and Color3.fromRGB(34, 27, 48) or Color3.fromRGB(18, 18, 30)
+                    keybindButton.BackgroundColor3 = inventoryViewer.capturing and Color3.fromRGB(34, 27, 48) or Color3.fromRGB(30, 30, 30)
                     if keybindButtonStroke then
                         keybindButtonStroke.Color = inventoryViewer.capturing and uiAccentColor or Color3.fromRGB(60, 60, 72)
                     end
@@ -6377,6 +7183,76 @@
                         inventoryViewer.refreshControls = nil
                     end
                 end)
+
+
+                ;(function()
+                local checkerOrder = 20
+                KeybindAdd("inventoryChecker", "Inventory Checker",
+                    function() return _G.__OmniInventoryChecker.getEnabled() end,
+                    function(value) _G.__OmniInventoryChecker.setEnabled(value) end)
+              
+                local function checkerToggleOption(label, key)
+                    makeToggleRow(inventoryPage, label,
+                        function() return _G.__OmniInventoryChecker.getOption(key) end,
+                        function(value) _G.__OmniInventoryChecker.setOption(key, value) end, checkerOrder)
+                    checkerOrder += 1
+                end
+                checkerToggleOption("Check Players", "targetPlayers")
+                checkerToggleOption("Check Dead Bodies", "bodies")
+                checkerToggleOption("Check AI", "ai")
+                checkerToggleOption("Show Estimated Value", "showValue")
+                checkerToggleOption("Show K/D", "showKDR")
+                checkerToggleOption("Show Reports", "showReports")
+                checkerToggleOption("Show Team", "showTeam")
+                checkerToggleOption("Show Hours Played", "showHours")
+                makeSliderRow(inventoryPage, "Aim Radius", 30, 400, 5,
+                    function() return _G.__OmniInventoryChecker.getOption("radius") end,
+                    function(value) _G.__OmniInventoryChecker.setOption("radius", value) end, checkerOrder)
+                checkerOrder += 1
+                makeSliderRow(inventoryPage, "Scan Rate", 5, 10, 1,
+                    function() return _G.__OmniInventoryChecker.getOption("updateRate") end,
+                    function(value) _G.__OmniInventoryChecker.setOption("updateRate", value) end, checkerOrder)
+                checkerOrder += 1
+                makeSliderRow(inventoryPage, "Minimum Value", 0, 500000, 1000,
+                    function() return _G.__OmniInventoryChecker.getOption("minValue") end,
+                    function(value) _G.__OmniInventoryChecker.setOption("minValue", value) end, checkerOrder)
+                checkerOrder += 1
+                makeSliderRow(inventoryPage, "Text Size", 10, 18, 1,
+                    function() return _G.__OmniInventoryChecker.getOption("textSize") end,
+                    function(value) _G.__OmniInventoryChecker.setOption("textSize", value) end, checkerOrder)
+                checkerOrder += 1
+                makeSliderRow(inventoryPage, "Line Height", 12, 24, 1,
+                    function() return _G.__OmniInventoryChecker.getOption("lineHeight") end,
+                    function(value) _G.__OmniInventoryChecker.setOption("lineHeight", value) end, checkerOrder)
+                checkerOrder += 1
+                makeSliderRow(inventoryPage, "Background Transparency", 0, 100, 1,
+                    function() return _G.__OmniInventoryChecker.getOption("transparency") * 100 end,
+                    function(value) _G.__OmniInventoryChecker.setOption("transparency", value / 100) end, checkerOrder)
+                checkerOrder += 1
+                local checkerModeRow, checkerModeButton = makeActionRow(inventoryPage, "Display Mode", 30, nil, 120)
+                checkerModeRow.LayoutOrder = checkerOrder
+                checkerModeButton.Activated:Connect(function()
+                    local nextMode = _G.__OmniInventoryChecker.getOption("mode") == "Text" and "Image" or "Text"
+                    _G.__OmniInventoryChecker.setMode(nextMode)
+                    checkerModeButton.Text = nextMode
+                end)
+                checkerModeButton.Text = "Text"
+                checkerOrder += 1
+                local checkerFilterRow, checkerFilterButton = makeActionRow(inventoryPage, "Item Filter", 30, nil, 120)
+                checkerFilterRow.LayoutOrder = checkerOrder
+                checkerFilterButton.Activated:Connect(function()
+                    checkerFilterButton.Text = _G.__OmniInventoryChecker.cycleFilter()
+                end)
+                checkerFilterButton.Text = "Off"
+                checkerOrder += 1
+                local customItemRow, customItemButton = makeActionRow(inventoryPage, "Custom Item Selection", 30, nil, 160)
+                customItemRow.LayoutOrder = checkerOrder
+                customItemButton.Activated:Connect(function()
+                    customItemButton.Text = _G.__OmniInventoryChecker.cycleCustomItem()
+                end)
+                customItemButton.Text = "Cycle / Toggle Item"
+                checkerOrder += 1
+                end)() 
 
                 local worldPage = pages["World"]
                 local worldOrder = 1
@@ -6635,7 +7511,34 @@
                     return aimState.triggerbot
                 end, function(value)
                     aimState.triggerbot = value
+                    if not value then
+                        aimState.triggerTarget = nil
+                        aimState.triggerReadyAt = 0
+                    end
                 end, 4, nil, nil, "triggerbot")
+                local _, triggerFovButton = makeActionRow(ragePage, "Trigger FOV", 5, nil, 120)
+                local triggerFovOptions = { "Silent Aim FOV", "Aimbot FOV" }
+                local function refreshTriggerFov()
+                    triggerFovButton.Text = aimState.triggerFovSource
+                end
+                triggerFovButton.Activated:Connect(function()
+                    local current = 1
+                    for index = 1, #triggerFovOptions do
+                        if triggerFovOptions[index] == aimState.triggerFovSource then
+                            current = index
+                            break
+                        end
+                    end
+                    aimState.triggerFovSource = triggerFovOptions[current % #triggerFovOptions + 1]
+                    refreshTriggerFov()
+                end)
+                refreshTriggerFov()
+                makeSliderRow(ragePage, "Trigger Delay (ms)", 0, 500, 5,
+                    function() return aimState.triggerDelay end,
+                    function(value) aimState.triggerDelay = value end, 6)
+                makeSliderRow(ragePage, "Trigger Hit Chance %", 1, 100, 1,
+                    function() return aimState.triggerChance end,
+                    function(value) aimState.triggerChance = value end, 7)
                 makeToggleRow(ragePage, "No Fall", function()
                     return aimState.noFall
                 end, function(value)
@@ -6725,7 +7628,7 @@
                 playerVisualsButton.Parent = featuresCard
                 playerVisualsButton.Position = UDim2.new(0, 12, 0, 42)
                 playerVisualsButton.Size = UDim2.new(0.5, -18, 0, 24)
-                playerVisualsButton.BackgroundColor3 = Color3.fromRGB(18, 18, 30)
+                playerVisualsButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
                 playerVisualsButton.BorderSizePixel = 0
                 playerVisualsButton.Text = "Player Visuals ›"
                 playerVisualsButton.TextColor3 = Color3.fromRGB(235, 235, 245)
@@ -6749,7 +7652,7 @@
                 skinChangerButton.Parent = featuresCard
                 skinChangerButton.Position = UDim2.new(0.5, 6, 0, 42)
                 skinChangerButton.Size = UDim2.new(0.5, -18, 0, 24)
-                skinChangerButton.BackgroundColor3 = Color3.fromRGB(18, 18, 30)
+                skinChangerButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
                 skinChangerButton.BorderSizePixel = 0
                 skinChangerButton.Text = "Skin Changer ›"
                 skinChangerButton.TextColor3 = Color3.fromRGB(235, 235, 245)
@@ -6815,7 +7718,7 @@
                 backButton.Parent = section
                 backButton.Position = UDim2.fromOffset(12, 34)
                 backButton.Size = UDim2.fromOffset(86, 22)
-                backButton.BackgroundColor3 = Color3.fromRGB(18, 18, 30)
+                backButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
                 backButton.BorderSizePixel = 0
                 backButton.Text = "‹ Features"
                 backButton.TextColor3 = Color3.fromRGB(235, 235, 245)
@@ -6850,7 +7753,7 @@
                 auraDropdown.Parent = auraRow
                 auraDropdown.Position = UDim2.new(1, -142, 0, 2)
                 auraDropdown.Size = UDim2.fromOffset(112, 20)
-                auraDropdown.BackgroundColor3 = Color3.fromRGB(18, 18, 30)
+                auraDropdown.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
                 auraDropdown.BorderSizePixel = 0
                 auraDropdown.Text = "Star of David  ▾"
                 auraDropdown.TextColor3 = Color3.fromRGB(235, 235, 245)
@@ -6910,7 +7813,7 @@
                 backButton.Parent = section
                 backButton.Position = UDim2.fromOffset(12, 34)
                 backButton.Size = UDim2.fromOffset(86, 22)
-                backButton.BackgroundColor3 = Color3.fromRGB(18, 18, 30)
+                backButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
                 backButton.BorderSizePixel = 0
                 backButton.Text = "‹ Features"
                 backButton.TextColor3 = Color3.fromRGB(235, 235, 245)
@@ -7100,7 +8003,7 @@
                 filterBox.Parent = weaponsPage
                 filterBox.LayoutOrder = 1
                 filterBox.Size = UDim2.new(1, -8, 0, 24)
-                filterBox.BackgroundColor3 = Color3.fromRGB(18, 18, 30)
+                filterBox.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
                 filterBox.BorderSizePixel = 0
                 filterBox.PlaceholderText = "Search weapons..."
                 filterBox.Text = ""
@@ -7234,7 +8137,7 @@
                 configNameBox.Parent = section
                 configNameBox.Position = UDim2.fromOffset(12, 228)
                 configNameBox.Size = UDim2.new(1, -24, 0, 24)
-                configNameBox.BackgroundColor3 = Color3.fromRGB(18, 18, 30)
+                configNameBox.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
                 configNameBox.BorderSizePixel = 0
                 configNameBox.PlaceholderText = "Type config name here..."
                 configNameBox.Text = ""
@@ -7308,7 +8211,7 @@
                     actionButton.Parent = configButtons
                     actionButton.Position = UDim2.new((actionIndex - 1) * 0.25, 0, 0, 0)
                     actionButton.Size = UDim2.new(0.25, -3, 1, 0)
-                    actionButton.BackgroundColor3 = Color3.fromRGB(18, 18, 30)
+                    actionButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
                     actionButton.BorderSizePixel = 0
                     actionButton.Text = actionName
                     actionButton.TextColor3 = Color3.fromRGB(235, 235, 245)
@@ -7341,7 +8244,7 @@
                 autoloadButton.Parent = section
                 autoloadButton.Position = UDim2.fromOffset(12, 288)
                 autoloadButton.Size = UDim2.new(0.5, -6, 0, 24)
-                autoloadButton.BackgroundColor3 = Color3.fromRGB(18, 18, 30)
+                autoloadButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
                 autoloadButton.BorderSizePixel = 0
                 autoloadButton.Text = "Set As Auto Load"
                 autoloadButton.TextColor3 = Color3.fromRGB(235, 235, 245)
@@ -7358,7 +8261,7 @@
                 removeAutoloadButton.Parent = section
                 removeAutoloadButton.Position = UDim2.new(0.5, 0, 0, 288)
                 removeAutoloadButton.Size = UDim2.new(0.5, -6, 0, 24)
-                removeAutoloadButton.BackgroundColor3 = Color3.fromRGB(18, 18, 30)
+                removeAutoloadButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
                 removeAutoloadButton.BorderSizePixel = 0
                 removeAutoloadButton.Text = "Remove Auto Load"
                 removeAutoloadButton.TextColor3 = Color3.fromRGB(235, 235, 245)
@@ -7393,7 +8296,7 @@
                 configsPageButton.Parent = section
                 configsPageButton.Position = UDim2.new(0, 12, 0, 34)
                 configsPageButton.Size = UDim2.new(0.5, -15, 0, 23)
-                configsPageButton.BackgroundColor3 = Color3.fromRGB(18, 18, 30)
+                configsPageButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
                 configsPageButton.BorderSizePixel = 0
                 configsPageButton.Text = "Save Manager"
                 configsPageButton.TextColor3 = Color3.fromRGB(235, 235, 245)
@@ -7405,7 +8308,7 @@
                 settingsPageButton.Parent = section
                 settingsPageButton.Position = UDim2.new(0.5, 3, 0, 34)
                 settingsPageButton.Size = UDim2.new(0.5, -15, 0, 23)
-                settingsPageButton.BackgroundColor3 = Color3.fromRGB(18, 18, 30)
+                settingsPageButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
                 settingsPageButton.BorderSizePixel = 0
                 settingsPageButton.Text = "Settings"
                 settingsPageButton.TextColor3 = Color3.fromRGB(235, 235, 245)
@@ -7524,7 +8427,7 @@
                 themePageButton.Parent = section
                 themePageButton.Position = UDim2.new(0, 12, 0, 33)
                 themePageButton.Size = UDim2.new(0.5, -15, 0, 23)
-                themePageButton.BackgroundColor3 = Color3.fromRGB(18, 18, 30)
+                themePageButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
                 themePageButton.BorderSizePixel = 0
                 themePageButton.Text = "Theme"
                 themePageButton.TextColor3 = Color3.fromRGB(235, 235, 245)
@@ -7537,7 +8440,7 @@
                 soundsPageButton.Parent = section
                 soundsPageButton.Position = UDim2.new(0.5, 3, 0, 33)
                 soundsPageButton.Size = UDim2.new(0.5, -15, 0, 23)
-                soundsPageButton.BackgroundColor3 = Color3.fromRGB(18, 18, 30)
+                soundsPageButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
                 soundsPageButton.BorderSizePixel = 0
                 soundsPageButton.Text = "Sounds"
                 soundsPageButton.TextColor3 = Color3.fromRGB(235, 235, 245)
@@ -7653,7 +8556,7 @@
                     option.Parent = list
                     option.Position = UDim2.fromOffset(0, (choiceIndex - 1) * 40)
                     option.Size = UDim2.new(1, 0, 0, 40)
-                    option.BackgroundColor3 = Color3.fromRGB(18, 18, 30)
+                    option.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
                     option.BorderSizePixel = 0
                     option.Text = ""
                     option.ZIndex = 31
@@ -7828,11 +8731,11 @@
                     ["Outline"] = uiAccentColor,
                     ["Text Misc"] = Color3.fromRGB(190, 190, 205),
                     ["Menu Background"] = Main.BackgroundColor3,
-                    ["Tab Button Unselected"] = Color3.fromRGB(15, 15, 25),
+                    ["Tab Button Unselected"] = Color3.fromRGB(22, 22, 22),
                     ["Inline"] = uiAccentColor,
                     ["High Contrast"] = Color3.fromRGB(235, 235, 245),
                     ["Low Contrast"] = Color3.fromRGB(75, 75, 90),
-                    ["Page Background"] = Color3.fromRGB(8, 8, 16),
+                    ["Page Background"] = Color3.fromRGB(22, 22, 22),
                     ["Section Background"] = Color3.fromRGB(10, 10, 20),
                     ["Accent"] = uiAccentColor,
                 }
@@ -7923,7 +8826,7 @@
                     control.Parent = hudRow
                     control.Position = UDim2.new(1, -90, 0, 1)
                     control.Size = UDim2.fromOffset(88, 20)
-                    control.BackgroundColor3 = checked and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(18, 18, 30)
+                    control.BackgroundColor3 = checked and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(30, 30, 30)
                     control.BorderSizePixel = 0
                     control.Text = controlText
                     control.TextColor3 = checked and Color3.fromRGB(20, 20, 25) or Color3.fromRGB(235, 235, 245)
@@ -8076,7 +8979,7 @@
                 presetButton.Parent = paletteScroll
                 presetButton.Position = UDim2.fromOffset(0, hudRowY + 278)
                 presetButton.Size = UDim2.new(1, -4, 0, 24)
-                presetButton.BackgroundColor3 = Color3.fromRGB(18, 18, 30)
+                presetButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
                 presetButton.BorderSizePixel = 0
                 presetButton.Text = "Themes  ▾"
                 presetButton.TextColor3 = Color3.fromRGB(235, 235, 245)
@@ -8108,7 +9011,7 @@
                 themeNameBox.Parent = paletteScroll
                 themeNameBox.Position = UDim2.fromOffset(0, hudRowY + 308)
                 themeNameBox.Size = UDim2.new(1, -4, 0, 24)
-                themeNameBox.BackgroundColor3 = Color3.fromRGB(18, 18, 30)
+                themeNameBox.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
                 themeNameBox.BorderSizePixel = 0
                 themeNameBox.PlaceholderText = "Theme name..."
                 themeNameBox.Text = ""
@@ -8134,7 +9037,7 @@
                 paletteScroll.CanvasSize = UDim2.fromOffset(0, hudRowY + 360)
 
                 local function cleanThemeName(value)
-                    return tostring(value or ""):gsub("%.json$", ""):gsub("[^%w%-%_ ]", ""):gsub("^%s+", ""):gsub("%s+$", ""):sub(1, 48)
+                    return tostring(value or ""):gsub("%.json$", ""):gsub("[^%w%-_ ]", ""):gsub("^%s+", ""):gsub("%s+$", ""):sub(1, 48)
                 end
                 local function themeFilePath(name)
                     return THEME_FOLDER .. "/" .. name .. ".json"
@@ -8305,7 +9208,7 @@
                     actionButton.Parent = themeActionsRow
                     actionButton.Position = UDim2.new((actionIndex - 1) / 3, 0, 0, 0)
                     actionButton.Size = UDim2.new(1 / 3, -3, 1, 0)
-                    actionButton.BackgroundColor3 = Color3.fromRGB(18, 18, 30)
+                    actionButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
                     actionButton.BorderSizePixel = 0
                     actionButton.Text = actionName
                     actionButton.TextColor3 = Color3.fromRGB(235, 235, 245)
@@ -8578,7 +9481,7 @@
                 volumeButton.Parent = volumeRow
                 volumeButton.Position = UDim2.new(1, -62, 0, 2)
                 volumeButton.Size = UDim2.fromOffset(40, 20)
-                volumeButton.BackgroundColor3 = Color3.fromRGB(18, 18, 30)
+                volumeButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
                 volumeButton.BorderSizePixel = 0
                 volumeButton.Text = "40%"
                 volumeButton.TextColor3 = Color3.fromRGB(235, 235, 245)
@@ -8683,7 +9586,7 @@
                 clickSoundButton.Parent = clickSoundRow
                 clickSoundButton.Position = UDim2.new(1, -104, 0, 2)
                 clickSoundButton.Size = UDim2.fromOffset(84, 20)
-                clickSoundButton.BackgroundColor3 = Color3.fromRGB(18, 18, 30)
+                clickSoundButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
                 clickSoundButton.BorderSizePixel = 0
                 clickSoundButton.TextColor3 = Color3.fromRGB(235, 235, 245)
                 clickSoundButton.Font = Enum.Font.Code
@@ -8738,7 +9641,7 @@
                 clickSoundInput.Parent = clickSoundInputRow
                 clickSoundInput.Position = UDim2.new(1, -104, 0, 2)
                 clickSoundInput.Size = UDim2.fromOffset(68, 20)
-                clickSoundInput.BackgroundColor3 = Color3.fromRGB(18, 18, 30)
+                clickSoundInput.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
                 clickSoundInput.BorderSizePixel = 0
                 clickSoundInput.Text = ""
                 clickSoundInput.PlaceholderText = "Asset ID"
@@ -8752,7 +9655,7 @@
                 addClickSoundButton.Parent = clickSoundInputRow
                 addClickSoundButton.Position = UDim2.new(1, -32, 0, 2)
                 addClickSoundButton.Size = UDim2.fromOffset(32, 20)
-                addClickSoundButton.BackgroundColor3 = Color3.fromRGB(18, 18, 30)
+                addClickSoundButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
                 addClickSoundButton.BorderSizePixel = 0
                 addClickSoundButton.Text = "Add"
                 addClickSoundButton.TextColor3 = Color3.fromRGB(235, 235, 245)
@@ -8863,17 +9766,17 @@
 			end
     end
 
-    local tabOrder = { Combat = 1, Visuals = 2, Player = 3, Misc = 4, Settings = 5 }
+    tabOrder = { Combat = 1, Visuals = 2, Player = 3, Misc = 4, Settings = 5 }
 
 
-    local function CreateTab(tabName)
+    function CreateTab(tabName)
 			local button = Instance.new("TextButton")
 			button.Name = tabName .. "Tab"
 			button.LayoutOrder = tabOrder[tabName] or 999
 			button.Parent = TabHolder
 			button.ZIndex = 10
 			button.Size = UDim2.fromOffset(105, 30)
-			button.BackgroundColor3 = Color3.fromRGB(15, 15, 25)
+			button.BackgroundColor3 = Color3.fromRGB(22, 22, 22)
 			button.BorderSizePixel = 0
 			button.Text = tabName
 			button.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -8917,7 +9820,7 @@
     showTab("Settings") 
     showTab("Combat")
 
-    local function startSnow()
+    function startSnow()
         if snowConnection then snowConnection:Disconnect() end
         applyTheme()
         snowConnection = RunService.RenderStepped:Connect(function(deltaTime)
@@ -9029,4 +9932,3 @@
             clampToViewport(Main)
         end
     end))
-    
