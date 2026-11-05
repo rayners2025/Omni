@@ -365,13 +365,15 @@
     Main.ZIndex = 1
     Main.BorderSizePixel = 0
 
-
+    
+    
+    
     local OMNI_BACKGROUND_URL = "https://raw.githubusercontent.com/samm124123-glitch/omni/main/omni.png"
     local OMNI_BACKGROUND_FOLDER = "Omni"
     local OMNI_BACKGROUND_FILE = OMNI_BACKGROUND_FOLDER .. "/omni_background.png"
 
     local function fetchOmniBackground()
-      
+        
         local requestFunction = (syn and syn.request) or request or http_request
         if type(requestFunction) == "function" then
             local ok, response = pcall(requestFunction, {
@@ -448,7 +450,7 @@
     omniBackgroundImage.Size = UDim2.fromScale(1, 1)
     omniBackgroundImage.ScaleType = Enum.ScaleType.Crop
     omniBackgroundImage.ImageTransparency = 0.08
-    omniBackgroundImage.ZIndex = 1  
+    omniBackgroundImage.ZIndex = 1 
     omniBackgroundImage.Parent = Main
 
     local omniBackgroundTint = Instance.new("Frame")
@@ -1825,170 +1827,6 @@
         return applied
     end
 
-    local inventoryViewer = {
-        enabled = true,
-        mode = "Image",
-        key = Enum.KeyCode.None,
-        capturing = false,
-        refreshControls = nil,
-    }
-
-    local inventoryViewerRoot = Instance.new("Frame")
-    inventoryViewerRoot.Name = "OmniInventoryViewer"
-    inventoryViewerRoot.Parent = HudGui
-    inventoryViewerRoot.AnchorPoint = Vector2.new(1, 0)
-    inventoryViewerRoot.Position = UDim2.new(1, -18, 0, 148)
-    inventoryViewerRoot.Size = UDim2.fromOffset(252, 334)
-    inventoryViewerRoot.BackgroundColor3 = Color3.fromRGB(8, 8, 14)
-    inventoryViewerRoot.BackgroundTransparency = 0.04
-    inventoryViewerRoot.BorderSizePixel = 0
-    inventoryViewerRoot.Visible = inventoryViewer.enabled
-    inventoryViewerRoot.ZIndex = 15
-
-    local inventoryViewerCorner = Instance.new("UICorner")
-    inventoryViewerCorner.CornerRadius = UDim.new(0, 8)
-    inventoryViewerCorner.Parent = inventoryViewerRoot
-
-    local inventoryViewerGradient = Instance.new("UIGradient")
-    inventoryViewerGradient.Rotation = 90
-    inventoryViewerGradient.Color = ColorSequence.new(Color3.fromRGB(20, 20, 32), Color3.fromRGB(7, 7, 13))
-    inventoryViewerGradient.Parent = inventoryViewerRoot
-
-    local inventoryViewerStroke = Instance.new("UIStroke")
-    inventoryViewerStroke.Parent = inventoryViewerRoot
-    bindAccent(inventoryViewerStroke)
-    inventoryViewerStroke.Thickness = 1
-    inventoryViewerStroke.Transparency = 0.35
-
-    local inventoryViewerHeader = Instance.new("Frame")
-    inventoryViewerHeader.Name = "InventoryViewerHeader"
-    inventoryViewerHeader.Parent = inventoryViewerRoot
-    inventoryViewerHeader.Size = UDim2.new(1, 0, 0, 34)
-    inventoryViewerHeader.BackgroundColor3 = Color3.fromRGB(13, 13, 22)
-    inventoryViewerHeader.BackgroundTransparency = 0.1
-    inventoryViewerHeader.BorderSizePixel = 0
-    inventoryViewerHeader.ZIndex = 16
-    local headerCorner = Instance.new("UICorner")
-    headerCorner.CornerRadius = UDim.new(0, 8)
-    headerCorner.Parent = inventoryViewerHeader
-
-    local inventoryHeaderAccentBar = Instance.new("Frame")
-    inventoryHeaderAccentBar.Parent = inventoryViewerHeader
-    inventoryHeaderAccentBar.Position = UDim2.fromOffset(10, 10)
-    inventoryHeaderAccentBar.Size = UDim2.fromOffset(2, 14)
-    inventoryHeaderAccentBar.BorderSizePixel = 0
-    inventoryHeaderAccentBar.ZIndex = 17
-    local headerAccentGradient = Instance.new("UIGradient")
-    headerAccentGradient.Rotation = 90
-    bindAccentGradient(headerAccentGradient)
-    headerAccentGradient.Parent = inventoryHeaderAccentBar
-
-    local inventoryHeaderLine = Instance.new("Frame")
-    inventoryHeaderLine.Parent = inventoryViewerHeader
-    inventoryHeaderLine.AnchorPoint = Vector2.new(0, 1)
-    inventoryHeaderLine.Position = UDim2.new(0, 8, 1, -1)
-    inventoryHeaderLine.Size = UDim2.new(1, -16, 0, 1)
-    inventoryHeaderLine.BorderSizePixel = 0
-    inventoryHeaderLine.BackgroundTransparency = 0.4
-    inventoryHeaderLine.ZIndex = 17
-    local headerLineGradient = Instance.new("UIGradient")
-    headerLineGradient.Color = ColorSequence.new(uiAccentColor, Color3.fromRGB(70, 70, 90))
-    bindAccentGradient(headerLineGradient)
-    headerLineGradient.Parent = inventoryHeaderLine
-
-    local inventoryViewerTitle = Instance.new("TextLabel")
-    inventoryViewerTitle.Parent = inventoryViewerHeader
-    inventoryViewerTitle.Position = UDim2.fromOffset(18, 7)
-    inventoryViewerTitle.Size = UDim2.new(1, -84, 0, 20)
-    inventoryViewerTitle.BackgroundTransparency = 1
-    inventoryViewerTitle.Text = "INVENTORY"
-    inventoryViewerTitle.TextColor3 = Color3.fromRGB(240, 240, 250)
-    inventoryViewerTitle.TextXAlignment = Enum.TextXAlignment.Left
-    inventoryViewerTitle.Font = Enum.Font.Code
-    inventoryViewerTitle.TextSize = 12
-    inventoryViewerTitle.ZIndex = 17
-
-    local inventoryCountBadge = Instance.new("Frame")
-    inventoryCountBadge.Parent = inventoryViewerHeader
-    inventoryCountBadge.AnchorPoint = Vector2.new(1, 0.5)
-    inventoryCountBadge.Position = UDim2.new(1, -10, 0.5, 0)
-    inventoryCountBadge.Size = UDim2.fromOffset(32, 17)
-    inventoryCountBadge.BackgroundColor3 = Color3.fromRGB(26, 26, 40)
-    inventoryCountBadge.BorderSizePixel = 0
-    inventoryCountBadge.ZIndex = 17
-    local countBadgeCorner = Instance.new("UICorner")
-    countBadgeCorner.CornerRadius = UDim.new(0, 4)
-    countBadgeCorner.Parent = inventoryCountBadge
-    local countBadgeStroke = Instance.new("UIStroke")
-    countBadgeStroke.Parent = inventoryCountBadge
-    countBadgeStroke.Color = Color3.fromRGB(70, 70, 90)
-    countBadgeStroke.Thickness = 1
-
-    local inventoryViewerCount = Instance.new("TextLabel")
-    inventoryViewerCount.Parent = inventoryCountBadge
-    inventoryViewerCount.Size = UDim2.fromScale(1, 1)
-    inventoryViewerCount.BackgroundTransparency = 1
-    inventoryViewerCount.Text = "0"
-    inventoryViewerCount.TextColor3 = Color3.fromRGB(230, 230, 242)
-    inventoryViewerCount.TextXAlignment = Enum.TextXAlignment.Center
-    inventoryViewerCount.Font = Enum.Font.Code
-    inventoryViewerCount.TextSize = 10
-    inventoryViewerCount.ZIndex = 18
-
-    local inventoryImageHolder = Instance.new("ScrollingFrame")
-    inventoryImageHolder.Parent = inventoryViewerRoot
-    inventoryImageHolder.Position = UDim2.fromOffset(4, 40)
-    inventoryImageHolder.Size = UDim2.new(1, -8, 1, -46)
-    inventoryImageHolder.BackgroundTransparency = 1
-    inventoryImageHolder.BorderSizePixel = 0
-    inventoryImageHolder.ScrollBarThickness = 3
-    inventoryImageHolder.ScrollBarImageColor3 = Color3.fromRGB(80, 80, 100)
-    inventoryImageHolder.CanvasSize = UDim2.fromOffset(0, 0)
-    inventoryImageHolder.AutomaticCanvasSize = Enum.AutomaticSize.Y
-    inventoryImageHolder.ClipsDescendants = true
-    inventoryImageHolder.ZIndex = 16
-
-    local inventoryImageGrid = Instance.new("UIGridLayout")
-    inventoryImageGrid.Parent = inventoryImageHolder
-    inventoryImageGrid.CellSize = UDim2.fromOffset(54, 64)
-    inventoryImageGrid.CellPadding = UDim2.fromOffset(5, 6)
-    inventoryImageGrid.SortOrder = Enum.SortOrder.LayoutOrder
-
-    local inventoryImagePadding = Instance.new("UIPadding")
-    inventoryImagePadding.Parent = inventoryImageHolder
-    inventoryImagePadding.PaddingLeft = UDim.new(0, 5)
-    inventoryImagePadding.PaddingTop = UDim.new(0, 6)
-    inventoryImagePadding.PaddingRight = UDim.new(0, 2)
-
-    local inventoryTextHolder = Instance.new("ScrollingFrame")
-    inventoryTextHolder.Parent = inventoryViewerRoot
-    inventoryTextHolder.Position = UDim2.fromOffset(4, 40)
-    inventoryTextHolder.Size = UDim2.new(1, -8, 1, -46)
-    inventoryTextHolder.BackgroundTransparency = 1
-    inventoryTextHolder.BorderSizePixel = 0
-    inventoryTextHolder.ScrollBarThickness = 3
-    inventoryTextHolder.ScrollBarImageColor3 = Color3.fromRGB(80, 80, 100)
-    inventoryTextHolder.CanvasSize = UDim2.fromOffset(0, 0)
-    inventoryTextHolder.AutomaticCanvasSize = Enum.AutomaticSize.Y
-    inventoryTextHolder.Visible = false
-    inventoryTextHolder.ZIndex = 16
-
-    local inventoryTextLayout = Instance.new("UIListLayout")
-    inventoryTextLayout.Parent = inventoryTextHolder
-    inventoryTextLayout.Padding = UDim.new(0, 4)
-    inventoryTextLayout.SortOrder = Enum.SortOrder.LayoutOrder
-
-    local inventoryTextPadding = Instance.new("UIPadding")
-    inventoryTextPadding.Parent = inventoryTextHolder
-    inventoryTextPadding.PaddingLeft = UDim.new(0, 5)
-    inventoryTextPadding.PaddingTop = UDim.new(0, 6)
-    inventoryTextPadding.PaddingRight = UDim.new(0, 2)
-
-    local function inventoryKeyName()
-        if inventoryViewer.key == Enum.KeyCode.None then return "None" end
-        return inventoryViewer.key.Name
-    end
-
     local uiRefreshers = {}
     local keybindEntries = {}
     local keybindById = {}
@@ -2010,9 +1848,6 @@
             if entry.key ~= "None" then
                 table.insert(lines, entry.label .. ": " .. entry.key)
             end
-        end
-        if inventoryViewer.key ~= Enum.KeyCode.None then
-            table.insert(lines, inventoryKeyName() .. ": Inventory")
         end
         table.insert(lines, "RightShift: Menu")
         hudKeybindLabel.RichText = false
@@ -2043,273 +1878,6 @@
         local entry = keybindById[id]
         return entry and entry.key or "None"
     end
-
-    local function collectInventoryEntries()
-        local entries = {}
-        local byName = {}
-        local itemsList = ReplicatedStorage:FindFirstChild("ItemsList")
-        local function push(name, amount)
-            if type(name) ~= "string" or name == "" then return end
-            amount = math.max(1, math.floor(tonumber(amount) or 1))
-            local existing = byName[name]
-            if existing then
-                existing.count += amount
-            else
-                local entry = { name = name, count = amount }
-                byName[name] = entry
-                entries[#entries + 1] = entry
-            end
-        end
-        local function pushItem(item)
-            local name = item.Name
-            if item:IsA("ObjectValue") and item.Value then
-                name = item.Value.Name
-            else
-                local attributeName = item:GetAttribute("ItemName")
-                if type(attributeName) == "string" and attributeName ~= "" then name = attributeName end
-            end
-            if itemsList and not itemsList:FindFirstChild(name) then return end
-            push(name, item:GetAttribute("Amount"))
-        end
-        local function scan(root, depth)
-            if not root or depth > 4 then return end
-            for _, child in ipairs(root:GetChildren()) do
-                local nested = child:FindFirstChild("Inventory")
-                local known = itemsList and itemsList:FindFirstChild(child.Name)
-                if nested and not known then
-                    scan(nested, depth + 1)
-                elseif child:IsA("ObjectValue") or child:IsA("Folder") or child:IsA("Model") or child:IsA("Configuration") then
-                    pushItem(child)
-                    local attachments = child:FindFirstChild("Attachments")
-                    if attachments then scan(attachments, depth + 1) end
-                else
-                    pushItem(child)
-                end
-            end
-        end
-        local data = gameDataFolder()
-        if data then
-            scan(data:FindFirstChild("Inventory"), 0)
-            if #entries == 0 then
-                scan(data:FindFirstChild("Hotbar"), 0)
-            end
-        end
-        table.sort(entries, function(a, b) return a.name < b.name end)
-        return entries
-    end
-
-    local inventoryLastSignature = nil
-
-    local function clearInventoryHolder(holder)
-        for _, child in ipairs(holder:GetChildren()) do
-            if child:IsA("ImageButton") or child:IsA("TextLabel") or child:IsA("Frame") then
-                child:Destroy()
-            end
-        end
-    end
-
-    local function clearInventoryEmptyState()
-        local empty = inventoryViewerRoot:FindFirstChild("InventoryEmptyState")
-        if empty then empty:Destroy() end
-    end
-
-    local function renderInventoryViewer(force)
-        if not inventoryViewer.enabled and not force then return end
-        local entries = collectInventoryEntries()
-        local signatureParts = { inventoryViewer.mode }
-        for index = 1, #entries do
-            signatureParts[#signatureParts + 1] = entries[index].name .. ":" .. entries[index].count
-        end
-        local signature = table.concat(signatureParts, ",")
-        if not force and signature == inventoryLastSignature then
-            return
-        end
-        inventoryLastSignature = signature
-
-        inventoryViewerCount.Text = tostring(#entries)
-        inventoryImageHolder.Visible = inventoryViewer.mode == "Image"
-        inventoryTextHolder.Visible = inventoryViewer.mode ~= "Image"
-        clearInventoryHolder(inventoryImageHolder)
-        clearInventoryHolder(inventoryTextHolder)
-        clearInventoryEmptyState()
-
-        if #entries == 0 then
-            local empty = Instance.new("TextLabel")
-            empty.Name = "InventoryEmptyState"
-            empty.Parent = inventoryViewerRoot
-            empty.Position = UDim2.fromOffset(4, 40)
-            empty.Size = UDim2.new(1, -8, 1, -46)
-            empty.BackgroundTransparency = 1
-            empty.Text = "No items found"
-            empty.TextColor3 = Color3.fromRGB(120, 120, 140)
-            empty.Font = Enum.Font.Code
-            empty.TextSize = 11
-            empty.ZIndex = 17
-            return
-        end
-
-        if inventoryViewer.mode == "Image" then
-            for index = 1, #entries do
-                local entry = entries[index]
-                local tile = Instance.new("ImageButton")
-                tile.Name = entry.name
-                tile.Parent = inventoryImageHolder
-                tile.LayoutOrder = index
-                tile.BackgroundColor3 = Color3.fromRGB(20, 20, 32)
-                tile.BorderSizePixel = 0
-                tile.Image = itemIcon(entry.name)
-                tile.ImageColor3 = Color3.new(1, 1, 1)
-                tile.ScaleType = Enum.ScaleType.Fit
-                tile.ZIndex = 17
-                local tileCorner = Instance.new("UICorner")
-                tileCorner.CornerRadius = UDim.new(0, 5)
-                tileCorner.Parent = tile
-                local tileGradient = Instance.new("UIGradient")
-                tileGradient.Rotation = 90
-                tileGradient.Color = ColorSequence.new(Color3.fromRGB(27, 27, 42), Color3.fromRGB(16, 16, 26))
-                tileGradient.Parent = tile
-                local tileStroke = Instance.new("UIStroke")
-                tileStroke.Parent = tile
-                tileStroke.Color = Color3.fromRGB(58, 58, 76)
-                tileStroke.Thickness = 1
-                local caption = Instance.new("TextLabel")
-                caption.Parent = tile
-                caption.AnchorPoint = Vector2.new(0, 1)
-                caption.Position = UDim2.new(0, 0, 1, 0)
-                caption.Size = UDim2.new(1, 0, 0, 15)
-                caption.BackgroundColor3 = Color3.fromRGB(8, 8, 14)
-                caption.BackgroundTransparency = 0.18
-                caption.BorderSizePixel = 0
-                caption.Text = entry.name
-                caption.TextColor3 = Color3.fromRGB(225, 225, 235)
-                caption.TextStrokeTransparency = 0.6
-                caption.TextTruncate = Enum.TextTruncate.AtEnd
-                caption.Font = Enum.Font.Code
-                caption.TextSize = 9
-                caption.ZIndex = 18
-                local captionCorner = Instance.new("UICorner")
-                captionCorner.CornerRadius = UDim.new(0, 4)
-                captionCorner.Parent = caption
-                if tile.Image == "" then
-                    local placeholder = Instance.new("TextLabel")
-                    placeholder.Parent = tile
-                    placeholder.Size = UDim2.new(1, 0, 1, -15)
-                    placeholder.BackgroundTransparency = 1
-                    placeholder.Text = string.upper(string.sub(entry.name, 1, 2))
-                    placeholder.TextColor3 = Color3.fromRGB(115, 115, 138)
-                    placeholder.Font = Enum.Font.Code
-                    placeholder.TextSize = 14
-                    placeholder.ZIndex = 18
-                end
-                if entry.count > 1 then
-                    local amountBack = Instance.new("Frame")
-                    amountBack.Parent = tile
-                    amountBack.AnchorPoint = Vector2.new(1, 0)
-                    amountBack.Position = UDim2.new(1, -3, 0, 3)
-                    amountBack.Size = UDim2.fromOffset(26, 14)
-                    amountBack.BackgroundColor3 = Color3.fromRGB(8, 8, 14)
-                    amountBack.BackgroundTransparency = 0.12
-                    amountBack.BorderSizePixel = 0
-                    amountBack.ZIndex = 18
-                    local amountCorner = Instance.new("UICorner")
-                    amountCorner.CornerRadius = UDim.new(0, 4)
-                    amountCorner.Parent = amountBack
-                    local amount = Instance.new("TextLabel")
-                    amount.Parent = amountBack
-                    amount.Size = UDim2.fromScale(1, 1)
-                    amount.BackgroundTransparency = 1
-                    amount.Text = "x" .. tostring(entry.count)
-                    amount.TextColor3 = Color3.fromRGB(255, 255, 255)
-                    amount.TextXAlignment = Enum.TextXAlignment.Center
-                    amount.Font = Enum.Font.Code
-                    amount.TextSize = 9
-                    amount.ZIndex = 19
-                end
-                tile.MouseEnter:Connect(function()
-                    tileStroke.Color = uiAccentColor
-                    tileStroke.Transparency = 0.2
-                end)
-                tile.MouseLeave:Connect(function()
-                    tileStroke.Color = Color3.fromRGB(58, 58, 76)
-                    tileStroke.Transparency = 0
-                end)
-            end
-        else
-            for index = 1, #entries do
-                local entry = entries[index]
-                local row = Instance.new("Frame")
-                row.Parent = inventoryTextHolder
-                row.LayoutOrder = index
-                row.Size = UDim2.new(1, -4, 0, 20)
-                row.BackgroundColor3 = Color3.fromRGB(17, 17, 27)
-                row.BackgroundTransparency = 0.12
-                row.BorderSizePixel = 0
-                row.ZIndex = 17
-                local rowCorner = Instance.new("UICorner")
-                rowCorner.CornerRadius = UDim.new(0, 4)
-                rowCorner.Parent = row
-                local nameLabel = Instance.new("TextLabel")
-                nameLabel.Parent = row
-                nameLabel.Position = UDim2.fromOffset(7, 0)
-                nameLabel.Size = UDim2.new(1, -46, 1, 0)
-                nameLabel.BackgroundTransparency = 1
-                nameLabel.Text = entry.name
-                nameLabel.TextColor3 = Color3.fromRGB(222, 224, 236)
-                nameLabel.TextXAlignment = Enum.TextXAlignment.Left
-                nameLabel.TextTruncate = Enum.TextTruncate.AtEnd
-                nameLabel.Font = Enum.Font.Code
-                nameLabel.TextSize = 11
-                nameLabel.ZIndex = 18
-                local countLabel = Instance.new("TextLabel")
-                countLabel.Parent = row
-                countLabel.AnchorPoint = Vector2.new(1, 0.5)
-                countLabel.Position = UDim2.new(1, -7, 0.5, 0)
-                countLabel.Size = UDim2.fromOffset(34, 16)
-                countLabel.BackgroundTransparency = 1
-                countLabel.Text = entry.count > 1 and ("x" .. tostring(entry.count)) or ""
-                countLabel.TextColor3 = uiAccentColor
-                countLabel.TextXAlignment = Enum.TextXAlignment.Right
-                countLabel.Font = Enum.Font.Code
-                countLabel.TextSize = 10
-                countLabel.ZIndex = 18
-            end
-        end
-    end
-
-    local function setInventoryViewerEnabled(value)
-        inventoryViewer.enabled = value and true or false
-        inventoryViewerRoot.Visible = inventoryViewer.enabled
-        if inventoryViewer.enabled then
-            renderInventoryViewer(true)
-        end
-        if inventoryViewer.refreshControls then
-            pcall(inventoryViewer.refreshControls)
-        end
-    end
-
-    table.insert(managedConnections, UIS.InputBegan:Connect(function(input, gameProcessed)
-        if uiUnloaded then return end
-        if inventoryViewer.capturing then
-            if input.UserInputType ~= Enum.UserInputType.Keyboard then return end
-            if input.KeyCode == Enum.KeyCode.RightShift then return end
-            inventoryViewer.capturing = false
-            if input.KeyCode == Enum.KeyCode.Escape then
-            elseif input.KeyCode == Enum.KeyCode.Backspace or input.KeyCode == Enum.KeyCode.Delete then
-                inventoryViewer.key = Enum.KeyCode.None
-            else
-                inventoryViewer.key = input.KeyCode
-            end
-            refreshInventoryKeybindLabel()
-            if inventoryViewer.refreshControls then
-                pcall(inventoryViewer.refreshControls)
-            end
-            return
-        end
-        if gameProcessed then return end
-        if inventoryViewer.key ~= Enum.KeyCode.None and input.KeyCode == inventoryViewer.key then
-            setInventoryViewerEnabled(not inventoryViewer.enabled)
-        end
-    end))
 
     table.insert(managedConnections, UIS.InputBegan:Connect(function(input, gameProcessed)
         if uiUnloaded then return end
@@ -2355,22 +1923,6 @@
         end
     end))
 
-    task.spawn(function()
-        while HudGui.Parent do
-            if inventoryViewer.enabled then
-                pcall(renderInventoryViewer, false)
-            end
-            task.wait(1)
-        end
-    end)
-
-    refreshInventoryKeybindLabel()
-    if inventoryViewer.enabled then
-        renderInventoryViewer(true)
-    end
-
-
-
     _G.__OmniInventoryChecker = (function()
         local state = {
             enabled = false, targetPlayers = true, bodies = false, ai = false,
@@ -2393,7 +1945,7 @@
             local old = coreGui:FindFirstChild("OmniInventoryCheckerScreen")
             if old then old:Destroy() end
 
-           
+            
             screen = Instance.new("ScreenGui")
             screen.Name = "OmniInventoryCheckerScreen"
             screen.ResetOnSpawn = false
@@ -2403,7 +1955,7 @@
             screen.Parent = coreGui
 
             root = Instance.new("Frame", screen)
-            root.Name = "InventoryViewerRoot"
+            root.Name = "OmniInventoryCheckerRoot"
             root.Size = UDim2.fromOffset(370, 470)
             root.Position = UDim2.fromOffset(math.max(0, (workspace.CurrentCamera and workspace.CurrentCamera.ViewportSize.X or 1280) - 390), 20)
             root.BackgroundColor3 = Color3.fromRGB(22, 22, 22)
@@ -2908,7 +2460,9 @@
             state.lastScan = now
             local target, kind = nearestTarget()
             if not target then
-
+                
+                
+                
                 state.target, state.targetKind = nil, nil
                 if not root or not root.Parent then build() end
                 if screen then screen.Enabled = true end
@@ -4536,7 +4090,8 @@
                                 entry.distanceLabel.Visible = espState.distance
                                 entry.distanceLabel.Text = tostring(meters) .. "m"
                                 entry.distanceLabel.TextColor3 = espColors.distance
-
+                                
+                                
                                 entry.visibilityLabel.Visible = espState.visibility
                                 entry.visibilityLabel.Text = entry.visible and "visible" or "hidden"
                                 entry.visibilityLabel.TextColor3 = entry.visible and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 50, 50)
@@ -4547,7 +4102,8 @@
                                 entry.visibilityLabel.TextSize = 12
                                 entry.visibilityLabel.ZIndex = 6
 
-
+                                
+                                
                                 if not entry.healthBack then
                                     entry.healthBack = Instance.new("Frame")
                                     entry.healthBack.Name = "ESPHealthBack"
@@ -5054,7 +4610,8 @@
                 pcall(function() tool:Activate() end)
             end
         end
-
+        
+        
         if aimState.triggerbot and not UIS:GetFocusedTextBox() then
             local camera = workspace.CurrentCamera
             local triggerPart = nil
@@ -5083,7 +4640,7 @@
                     end
                 end
 
-               
+                
                 if aimState.triggerTargetAI then
                     local aiZones = workspace:FindFirstChild("AiZones")
                     if aiZones then
@@ -5936,9 +5493,6 @@
             watermarkEnabled = watermarkEnabled,
             watermarkOptions = table.clone(watermarkOptions),
             watermarkRefreshRate = watermarkRefreshRate,
-            inventoryViewerEnabled = inventoryViewer.enabled,
-            inventoryViewerMode = inventoryViewer.mode,
-            inventoryViewerKey = inventoryKeyName(),
             keybindListEnabled = hudKeybindEnabled,
             palette = palette,
             esp = saveEncodeState(espState),
@@ -6012,19 +5566,6 @@
             end
         end
         if type(data.watermarkRefreshRate) == "number" then watermarkRefreshRate = math.clamp(data.watermarkRefreshRate, 0.1, 1) end
-        if data.inventoryViewerMode == "Image" or data.inventoryViewerMode == "Text" then
-            inventoryViewer.mode = data.inventoryViewerMode
-            inventoryLastSignature = nil
-        end
-        if type(data.inventoryViewerKey) == "string" then
-            local keyOK, keyCode = pcall(function() return Enum.KeyCode[data.inventoryViewerKey] end)
-            if keyOK and keyCode then inventoryViewer.key = keyCode end
-        end
-        if type(data.inventoryViewerEnabled) == "boolean" then
-            setInventoryViewerEnabled(data.inventoryViewerEnabled)
-        elseif inventoryViewer.refreshControls then
-            pcall(inventoryViewer.refreshControls)
-        end
         if type(data.palette) == "table" and applyLoadedPalette then
             local colors = {}
             for name, rgb in next, data.palette do
@@ -6882,7 +6423,7 @@
               end
 				section.BackgroundColor3 = Color3.fromRGB(22, 22, 22)
                 section.BackgroundTransparency = 0.28 
-                section.ZIndex = 2
+                section.ZIndex = 2 
 				section.BorderSizePixel = 0
 
 				local sectionStroke = Instance.new("UIStroke")
@@ -7070,127 +6611,17 @@
                     inventoryPageLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
                 end
 
-                local toggleRow, refreshInventoryToggle = makeToggleRow(inventoryPage, "Inventory Viewer", function()
-                    return inventoryViewer.enabled
-                end, function(value)
-                    setInventoryViewerEnabled(value)
-                end, 1)
-
-                toggleRow.Name = "InventoryViewerToggleRow"
-
-                local modeRow = Instance.new("Frame")
-                modeRow.Name = "InventoryViewerModeRow"
-                modeRow.Parent = inventoryPage
-                modeRow.LayoutOrder = 2
-                modeRow.Size = UDim2.new(1, -16, 0, 26)
-                modeRow.BackgroundTransparency = 1
-                modeRow.ZIndex = 6
-                local modeLabel = Instance.new("TextLabel")
-                modeLabel.Parent = modeRow
-                modeLabel.Size = UDim2.new(1, -140, 1, 0)
-                modeLabel.BackgroundTransparency = 1
-                modeLabel.Text = "Display Mode"
-                modeLabel.TextColor3 = Color3.fromRGB(200, 200, 215)
-                modeLabel.TextXAlignment = Enum.TextXAlignment.Left
-                modeLabel.Font = Enum.Font.Code
-                modeLabel.TextSize = 11
-                modeLabel.ZIndex = 6
-                local imageModeButton = Instance.new("TextButton")
-                imageModeButton.Name = "InventoryViewerImageMode"
-                imageModeButton.Parent = modeRow
-                imageModeButton.Position = UDim2.new(1, -132, 0, 3)
-                imageModeButton.Size = UDim2.fromOffset(64, 20)
-                imageModeButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-                imageModeButton.BorderSizePixel = 0
-                imageModeButton.Text = "Image"
-                imageModeButton.Font = Enum.Font.Code
-                imageModeButton.TextSize = 10
-                imageModeButton.ZIndex = 7
-                local imageModeCorner = Instance.new("UICorner")
-                imageModeCorner.CornerRadius = UDim.new(0, 3)
-                imageModeCorner.Parent = imageModeButton
-                local imageModeStroke = Instance.new("UIStroke")
-                imageModeStroke.Parent = imageModeButton
-                imageModeStroke.Color = Color3.fromRGB(60, 60, 72)
-                imageModeStroke.Thickness = 1
-                local textModeButton = Instance.new("TextButton")
-                textModeButton.Name = "InventoryViewerTextMode"
-                textModeButton.Parent = modeRow
-                textModeButton.Position = UDim2.new(1, -66, 0, 3)
-                textModeButton.Size = UDim2.fromOffset(64, 20)
-                textModeButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-                textModeButton.BorderSizePixel = 0
-                textModeButton.Text = "Text"
-                textModeButton.Font = Enum.Font.Code
-                textModeButton.TextSize = 10
-                textModeButton.ZIndex = 7
-                local textModeCorner = Instance.new("UICorner")
-                textModeCorner.CornerRadius = UDim.new(0, 3)
-                textModeCorner.Parent = textModeButton
-                local textModeStroke = Instance.new("UIStroke")
-                textModeStroke.Parent = textModeButton
-                textModeStroke.Color = Color3.fromRGB(60, 60, 72)
-                textModeStroke.Thickness = 1
-                imageModeButton.Activated:Connect(function()
-                    inventoryViewer.mode = "Image"
-                    inventoryLastSignature = nil
-                    if inventoryViewer.enabled then renderInventoryViewer(true) end
-                    if inventoryViewer.refreshControls then pcall(inventoryViewer.refreshControls) end
-                end)
-                textModeButton.Activated:Connect(function()
-                    inventoryViewer.mode = "Text"
-                    inventoryLastSignature = nil
-                    if inventoryViewer.enabled then renderInventoryViewer(true) end
-                    if inventoryViewer.refreshControls then pcall(inventoryViewer.refreshControls) end
-                end)
-
-                local keybindRow, keybindButton = makeBindRow(inventoryPage, "Toggle Bind", 3)
-                keybindRow.Name = "InventoryViewerKeybindRow"
-                local keybindButtonStroke = keybindButton:FindFirstChildOfClass("UIStroke")
-                keybindButton.Activated:Connect(function()
-                    inventoryViewer.capturing = true
-                    if inventoryViewer.refreshControls then pcall(inventoryViewer.refreshControls) end
-                end)
-                keybindButton.MouseButton2Click:Connect(function()
-                    inventoryViewer.key = Enum.KeyCode.None
-                    refreshInventoryKeybindLabel()
-                    if inventoryViewer.refreshControls then pcall(inventoryViewer.refreshControls) end
-                end)
-
-                local function refreshInventoryControls()
-                    refreshInventoryToggle()
-                    local imageOn = inventoryViewer.mode == "Image"
-                    imageModeButton.BackgroundColor3 = imageOn and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(30, 30, 30)
-                    imageModeButton.TextColor3 = imageOn and Color3.fromRGB(10, 10, 18) or Color3.fromRGB(200, 200, 215)
-                    imageModeStroke.Color = imageOn and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(60, 60, 72)
-                    textModeButton.BackgroundColor3 = (not imageOn) and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(30, 30, 30)
-                    textModeButton.TextColor3 = (not imageOn) and Color3.fromRGB(10, 10, 18) or Color3.fromRGB(200, 200, 215)
-                    textModeStroke.Color = (not imageOn) and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(60, 60, 72)
-                    keybindButton.Text = inventoryViewer.capturing and "..." or inventoryKeyName()
-                    keybindButton.TextColor3 = inventoryViewer.capturing and uiAccentColor or Color3.fromRGB(225, 225, 235)
-                    keybindButton.BackgroundColor3 = inventoryViewer.capturing and Color3.fromRGB(34, 27, 48) or Color3.fromRGB(30, 30, 30)
-                    if keybindButtonStroke then
-                        keybindButtonStroke.Color = inventoryViewer.capturing and uiAccentColor or Color3.fromRGB(60, 60, 72)
-                    end
-                end
-
-                inventoryViewer.refreshControls = refreshInventoryControls
-                refreshInventoryControls()
-
-                inventoryPage.Destroying:Connect(function()
-                    inventoryViewer.capturing = false
-                    if inventoryViewer.refreshControls == refreshInventoryControls then
-                        inventoryViewer.refreshControls = nil
-                    end
-                end)
 
 
                 ;(function()
-                local checkerOrder = 20
+                local checkerOrder = 1
                 KeybindAdd("inventoryChecker", "Inventory Checker",
                     function() return _G.__OmniInventoryChecker.getEnabled() end,
                     function(value) _G.__OmniInventoryChecker.setEnabled(value) end)
-              
+                makeToggleRow(inventoryPage, "Inventory Checker",
+                    function() return _G.__OmniInventoryChecker.getEnabled() end,
+                    function(value) _G.__OmniInventoryChecker.setEnabled(value) end, checkerOrder)
+                checkerOrder += 1
                 local function checkerToggleOption(label, key)
                     makeToggleRow(inventoryPage, label,
                         function() return _G.__OmniInventoryChecker.getOption(key) end,
